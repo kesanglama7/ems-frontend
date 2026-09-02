@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Building2,
+  CalendarCheck,
+  CalendarDays,
   FileText,
   LayoutDashboard,
   Settings,
@@ -51,9 +53,24 @@ const adminNavigation: NavItem[] = [
     icon: Users,
   },
   {
+    title: "Attendance",
+    href: "/admin/attendance",
+    icon: CalendarCheck,
+  },
+  {
     title: "Documents",
     href: "/admin/documents",
     icon: FileText,
+  },
+  {
+    title: "Leaves",
+    href: "/admin/leaves/requests",
+    icon: CalendarDays,
+  },
+  {
+    title: "Leave Types",
+    href: "/admin/leaves",
+    icon: CalendarDays,
   },
   {
     title: "Departments",

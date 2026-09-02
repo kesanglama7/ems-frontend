@@ -1,6 +1,7 @@
 import type {
   UserRole,
   UserStatus,
+  UserWorkMode,
 } from "@/types/user.types";
 
 export interface EmployeeDepartment {
@@ -27,6 +28,7 @@ export interface EmployeeListItem {
   profileImageUrl: string | undefined;
   departmentId: string | null;
   department: EmployeeDepartment | null;
+  workMode: UserWorkMode;
   user: EmployeeUser;
 }
 
@@ -36,6 +38,7 @@ export interface EmployeeListQuery {
   search?: string;
   departmentId?: string;
   status?: UserStatus;
+  workMode?: UserWorkMode;
 }
 
 export interface EmployeeListMeta {
@@ -57,6 +60,7 @@ export interface CreateEmployeePayload {
   firstName: string;
   lastName: string;
   phone?: string;
+  workMode: UserWorkMode;
   jobTitle?: string;
   departmentId?: string;
   dateOfJoining?: string;
@@ -100,6 +104,7 @@ export interface EmployeeDetails {
   jobTitle: string | null;
   dateOfJoining: string | null;
   profileImagePath: string | null;
+  workMode: UserWorkMode;
   departmentId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -120,6 +125,7 @@ export interface UpdateEmployeePayload {
   jobTitle?: string;
   departmentId?: string | null;
   dateOfJoining?: string | null;
+  workMode?: UserWorkMode;
 }
 
 export interface UpdateEmployeeResponse {
@@ -144,4 +150,19 @@ export interface UpdateEmployeeStatusResponse {
       status: UserStatus;
     };
   };
+}
+
+// ─── Department Colleagues ──────────────────────────────────────────────────
+
+export interface DepartmentColleaguesResponse {
+  success: boolean;
+  data: DepartmentColleague[];
+}
+
+export interface DepartmentColleague {
+  id: string;
+  firstName: string;
+  lastName: string;
+  jobTitle: string | null;
+  profileImageUrl: string | undefined;
 }

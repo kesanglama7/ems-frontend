@@ -63,6 +63,10 @@ export const updateEmployeeSchema =
         "Enter a valid joining date.",
       ),
     ]),
+
+    workMode: z.enum(["ON_FIELD", "REMOTE"], {
+      error: "Work mode is required.",
+    }),
   });
 
 export type UpdateEmployeeFormValues =

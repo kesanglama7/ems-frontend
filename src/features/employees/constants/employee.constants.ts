@@ -16,6 +16,8 @@ export const employeeKeys = {
 
   detail: (employeeId: string) =>
     [...employeeKeys.details(), employeeId] as const,
+
+  colleagues: () => [...employeeKeys.all, "colleagues"] as const,
 };
 
 

@@ -47,6 +47,7 @@ import {
   type UpdateEmployeeFormValues,
 } from "../schemas/update-employee.schema";
 import type { UpdateEmployeePayload } from "../types/employee.types";
+import { workModeItems } from "../constants/employee.enums";
 
 interface EditEmployeeFormProps {
   employeeId: string;
@@ -88,7 +89,7 @@ function toDateInputValue(
 
 function EditEmployeeSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6">
+    <div className="mx-auto w-full max-w-7xl space-y-6">
       <Skeleton className="h-8 w-48" />
       <Skeleton className="h-64 w-full rounded-lg" />
       <Skeleton className="h-64 w-full rounded-lg" />
@@ -122,6 +123,7 @@ export function EditEmployeeForm({
         jobTitle: "",
         departmentId: "",
         dateOfJoining: "",
+        workMode: "ON_FIELD",
       },
     });
 
@@ -150,6 +152,8 @@ export function EditEmployeeForm({
         toDateInputValue(
           employee.dateOfJoining,
         ),
+      workMode:
+        employee.workMode,
     });
   }, [
     employeeQuery.data,
@@ -224,7 +228,7 @@ export function EditEmployeeForm({
 
   if (employeeQuery.isError) {
     return (
-      <div className="mx-auto flex min-h-72 w-full max-w-3xl flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
+      <div className="mx-auto flex min-h-72 w-full max-w-7xl flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
         <h2 className="font-medium">
           Unable to load employee
         </h2>
@@ -286,6 +290,7 @@ export function EditEmployeeForm({
         values.dateOfJoining
           ? values.dateOfJoining
           : null,
+      workMode: values.workMode,
     };
 
     try {
@@ -313,7 +318,7 @@ export function EditEmployeeForm({
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
+    <div className="mx-auto w-full max-w-7xl">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">
           Edit employee
@@ -529,6 +534,7 @@ export function EditEmployeeForm({
           </div>
 
           <FieldGroup>
+            <div className="grid gap-5 sm:grid-cols-2">
             <Controller
               name="jobTitle"
               control={
@@ -570,6 +576,47 @@ export function EditEmployeeForm({
                 </Field>
               )}
             />
+             <Controller
+              name="workMode"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Work Mode</FieldLabel>
+
+                  <Select
+                    items={workModeItems}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger aria-invalid={fieldState.invalid}>
+                      <SelectValue placeholder="Select work mode" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      <SelectGroup>
+                        {workModeItems.map((item) => (
+                          <SelectItem
+                            key={item.value}
+                            value={item.value}
+                          >
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+
+                  <FieldDescription>
+                    Select whether the employee works on field or remotely.
+                  </FieldDescription>
+
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <Controller
@@ -730,16 +777,13 @@ export function EditEmployeeForm({
         </div>
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <Button
-            variant="outline"
-            render={
-              <Link
-                href={`/admin/employees/${employeeId}`}
-              />
-            }
-          >
-            Cancel
-          </Button>
+          <Link href={`/admin/employees/${employeeId}`}>
+            <Button
+              variant="outline"
+            >
+              Cancel
+            </Button>
+          </Link>
 
           <Button
             type="submit"

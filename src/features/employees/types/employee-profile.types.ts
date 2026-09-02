@@ -31,6 +31,7 @@ export interface EmployeeProfile {
   user: EmployeeProfileUser;
 
   profileImageUrl: string | null;
+  workMode: "ON_FIELD" | "REMOTE";
 }
 
 export interface UpdateMyProfilePayload {

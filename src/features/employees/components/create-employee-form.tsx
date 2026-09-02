@@ -37,6 +37,7 @@ import {
   type CreateEmployeeFormValues,
 } from "../schemas/create-employee.schema";
 import type { CreateEmployeePayload } from "../types/employee.types";
+import { workModeItems } from "../constants/employee.enums";
 
 const NO_DEPARTMENT = "NONE";
 
@@ -73,6 +74,7 @@ export function CreateEmployeeForm() {
         jobTitle: "",
         departmentId: "",
         dateOfJoining: "",
+        workMode: "ON_FIELD",
       },
     });
 
@@ -117,6 +119,7 @@ export function CreateEmployeeForm() {
           optionalValue(
             values.dateOfJoining,
           ),
+        workMode: values.workMode,
       };
 
     try {
@@ -141,7 +144,7 @@ export function CreateEmployeeForm() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
+    <div className="mx-auto w-full max-w-7xl">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">
           Create employee
@@ -339,10 +342,6 @@ export function CreateEmployeeForm() {
                         />
                     </div>
 
-                    <FieldDescription>
-                        Optional. Enter a 10-digit number
-                        starting with 97 or 98.
-                    </FieldDescription>
 
                     {fieldState.invalid && (
                         <FieldError
@@ -369,47 +368,90 @@ export function CreateEmployeeForm() {
           </div>
 
           <FieldGroup>
-            <Controller
-              name="jobTitle"
-              control={form.control}
-              render={({
-                field,
-                fieldState,
-              }) => (
-                <Field
-                  data-invalid={
-                    fieldState.invalid
-                  }
-                >
-                  <FieldLabel
-                    htmlFor={field.name}
-                  >
-                    Job title
-                  </FieldLabel>
 
-                  <Input
-                    {...field}
-                    id={field.name}
-                    aria-invalid={
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Controller
+                name="jobTitle"
+                control={form.control}
+                render={({
+                  field,
+                  fieldState,
+                }) => (
+                  <Field
+                    data-invalid={
                       fieldState.invalid
                     }
-                    placeholder="Software Engineer"
-                  />
+                  >
+                    <FieldLabel
+                      htmlFor={field.name}
+                    >
+                      Job title
+                    </FieldLabel>
+
+                    <Input
+                      {...field}
+                      id={field.name}
+                      aria-invalid={
+                        fieldState.invalid
+                      }
+                      placeholder="Software Engineer"
+                    />
+                    <FieldDescription>
+                      Optional. The employee&apos;s
+                      job title or position.
+                    </FieldDescription>
+
+                    {fieldState.invalid && (
+                      <FieldError
+                        errors={[
+                          fieldState.error,
+                        ]}
+                      />
+                    )}
+                  </Field>
+                )}
+              />
+             <Controller
+              name="workMode"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Work Mode</FieldLabel>
+
+                  <Select
+                    items={workModeItems}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger aria-invalid={fieldState.invalid}>
+                      <SelectValue placeholder="Select work mode" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      <SelectGroup>
+                        {workModeItems.map((item) => (
+                          <SelectItem
+                            key={item.value}
+                            value={item.value}
+                          >
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
 
                   <FieldDescription>
-                    Optional
+                    Select whether the employee works on field or remotely.
                   </FieldDescription>
 
                   {fieldState.invalid && (
-                    <FieldError
-                      errors={[
-                        fieldState.error,
-                      ]}
-                    />
+                    <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
               )}
             />
+            </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
              <Controller

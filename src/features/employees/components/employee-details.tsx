@@ -28,18 +28,12 @@ import { getApiErrorMessage } from "@/lib/api-error";
 
 import { useEmployee } from "../hooks/use-employee";
 import { EmployeeStatusAction } from "./employee-status-action";
+import { getInitials } from "@/lib/name-shorten";
 
 interface EmployeeDetailsProps {
   employeeId: string;
 }
 
-function getInitials(
-  firstName: string,
-  lastName: string,
-) {
-  return `${firstName[0] ?? ""}${lastName[0] ?? ""}`
-    .toUpperCase();
-}
 
 function formatDate(
   value: string | null,

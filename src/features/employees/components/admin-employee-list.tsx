@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import {
+  CalendarCheck,
   ChevronLeft,
   ChevronRight,
   Eye,
@@ -46,7 +47,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getApiErrorMessage } from "@/lib/api-error";
-import type { UserStatus } from "@/types/user.types";
+import type { UserStatus, UserWorkMode } from "@/types/user.types";
 
 import { useDepartments } from "@/features/departments/hooks/use-departments";
 import { EmployeeListItem, EmployeeListQuery } from "@/features/employees/types/employee.types";
@@ -59,6 +60,25 @@ const PAGE_SIZE = 20;
 type StatusFilter =
   | "ALL"
   | UserStatus;
+
+type WorkModeFilter =
+  | "ALL"
+  | UserWorkMode;
+
+const workModeItems = [
+  {
+    label: "All work modes",
+    value: "ALL",
+  },
+  {
+    label: "On Field",
+    value: "ON_FIELD",
+  },
+  {
+    label: "Remote",
+    value: "REMOTE",
+  },
+]
 
 const statusItems = [
   {
@@ -124,6 +144,26 @@ function EmployeeStatusBadge({
   );
 }
 
+function WorkModeStatus({
+  workMode,
+}: {
+  workMode: UserWorkMode;
+}) {
+  return (
+    <Badge
+      variant={
+        workMode === "ON_FIELD"
+          ? "default"
+          : "secondary"
+      }
+    >
+      {workMode === "ON_FIELD"
+        ? "On Field"
+        : "Remote"}
+    </Badge>
+  );
+}
+
 function EmployeeTableSkeleton() {
   return (
     <div className="space-y-3">
@@ -157,6 +197,7 @@ function EmployeeDesktopTable({
             <TableHead>
               Joining date
             </TableHead>
+            <TableHead>Work mode</TableHead>
             <TableHead className="w-12">
               <span className="sr-only">
                 Actions
@@ -219,6 +260,13 @@ function EmployeeDesktopTable({
                   employee.dateOfJoining,
                 )}
               </TableCell>
+              <TableCell>
+                <WorkModeStatus
+                  workMode={
+                    employee.workMode
+                  }
+                />
+              </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger
@@ -254,6 +302,16 @@ function EmployeeDesktopTable({
                       >
                         <Pencil className="size-4" />
                         Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        render={
+                          <Link
+                            href={`/admin/employees/${employee.id}/attendance`}
+                          />
+                        }
+                      >
+                        <CalendarCheck className="size-4" />
+                        Attendance
                       </DropdownMenuItem>
                       <EmployeeStatusMenuItem
                         employeeId={
@@ -361,16 +419,27 @@ function EmployeeMobileList({
                     </p>
                   </div>
                 </div>
-
-                <div>
-                  <p className="text-muted-foreground text-xs">
-                    Joining date
-                  </p>
-                  <p>
-                    {formatJoiningDate(
-                      employee.dateOfJoining,
-                    )}
-                  </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-muted-foreground text-xs">
+                      Joining date
+                    </p>
+                    <p>
+                      {formatJoiningDate(
+                        employee.dateOfJoining,
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">
+                      Work mode
+                    </p>
+                    <WorkModeStatus
+                      workMode={
+                        employee.workMode
+                      }
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -399,6 +468,11 @@ export function AdminEmployeeList() {
     setStatusFilter,
   ] =
     useState<StatusFilter>("ALL");
+
+  const [
+    workModeFilter,
+    setWorkModeFilter,
+  ] = useState<WorkModeFilter>("ALL");
 
   const [
     departmentFilter,
@@ -436,12 +510,17 @@ export function AdminEmployeeList() {
           departmentFilter === "ALL"
             ? undefined
             : departmentFilter,
+        workMode:
+          workModeFilter === "ALL"
+            ? undefined
+            : workModeFilter,
       }),
       [
         page,
         debouncedSearch,
         statusFilter,
         departmentFilter,
+        workModeFilter,
       ],
     );
 
@@ -474,13 +553,15 @@ export function AdminEmployeeList() {
   const hasFilters =
     searchInput.length > 0 ||
     statusFilter !== "ALL" ||
-    departmentFilter !== "ALL";
+    departmentFilter !== "ALL" ||
+    workModeFilter !== "ALL";
 
   function clearFilters() {
     setSearchInput("");
     setDebouncedSearch("");
     setStatusFilter("ALL");
     setDepartmentFilter("ALL");
+    setWorkModeFilter("ALL");
     setPage(1);
   }
 
@@ -542,6 +623,45 @@ export function AdminEmployeeList() {
             className="pl-9"
           />
         </div>
+
+        <Select
+          items={workModeItems}
+          value={workModeFilter}
+          onValueChange={(value) => {
+            if (!value) {
+              return;
+            }
+
+            setWorkModeFilter(
+              value as WorkModeFilter,
+            );
+            setPage(1);
+          }}
+        >
+          <SelectTrigger
+            className="w-full lg:w-56"
+            disabled={
+              employeesQuery.isPending
+            }
+          >
+            <SelectValue placeholder="Work mode" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectGroup>
+              {workModeItems.map(
+                (item) => (
+                  <SelectItem
+                    key={item.value}
+                    value={item.value}
+                  >
+                    {item.label}
+                  </SelectItem>
+                ),
+              )}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
 
         <Select
           items={departmentItems}
@@ -620,6 +740,7 @@ export function AdminEmployeeList() {
           <Button
             type="button"
             variant="ghost"
+            size="sm"
             onClick={clearFilters}
           >
             Clear

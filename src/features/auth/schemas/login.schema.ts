@@ -8,8 +8,10 @@ export const loginSchema = z.object({
   password: z
     .string()
     .min(1, "Password is required."),
+
+  authMode: z.enum(["COOKIE", "JWT"], {
+    error: "Authentication mode is required.",
+  }),
 });
 
-export type LoginFormValues = z.infer<
-  typeof loginSchema
->;
+export type LoginFormValues = z.infer<typeof loginSchema>;

@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+    CalendarCheck,
+    CalendarDays,
     FileText,
-  LayoutDashboard,
-  UserRound,
+    LayoutDashboard,
+    UserRound,
+    Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -44,9 +47,24 @@ const employeeNavigation: NavItem[] = [
     icon: LayoutDashboard,
   },
   {
+    title: "Attendance",
+    href: "/employee/attendance",
+    icon: CalendarCheck,
+  },
+  {
+    title: "Leaves",
+    href: "/employee/leaves",
+    icon: CalendarDays,
+  },
+  {
     title: "Documents",
     href: "/employee/documents",
     icon: FileText,
+  },
+  {
+    title: "Colleagues",
+    href: "/employee/colleagues",
+    icon: Users,
   },
 ];
 

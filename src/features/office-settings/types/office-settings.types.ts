@@ -1,11 +1,34 @@
+export const WORKING_DAYS = [
+  "SUNDAY",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+] as const;
+
+export type WorkingDay = (typeof WORKING_DAYS)[number];
+
 export interface OfficeSetting {
   id: string;
+
   officeName: string;
   timezone: string;
+
   workStartTime: string;
   workEndTime: string;
-  workingDays: string[];
+
+  workingDays: WorkingDay[];
+
   gracePeriodMinutes: number;
+
+  // Office location / attendance geofence
+  officeLatitude: number | null;
+  officeLongitude: number | null;
+  officeAddress: string | null;
+  attendanceRadiusMeters: number;
+
   createdAt: string;
   updatedAt: string;
 }
@@ -19,20 +42,12 @@ export type UpdateOfficeSettingPayload = Partial<
     | "workEndTime"
     | "workingDays"
     | "gracePeriodMinutes"
+    | "officeLatitude"
+    | "officeLongitude"
+    | "officeAddress"
+    | "attendanceRadiusMeters"
   >
 >;
-
-export const WORKING_DAYS = [
-  "SUNDAY",
-  "MONDAY",
-  "TUESDAY",
-  "WEDNESDAY",
-  "THURSDAY",
-  "FRIDAY",
-  "SATURDAY",
-] as const;
-
-export type WorkingDay = (typeof WORKING_DAYS)[number];
 
 export const WORKING_DAY_LABELS: Record<WorkingDay, string> = {
   SUNDAY: "Sun",
@@ -62,37 +77,94 @@ export const TIMEZONE_OPTIONS: TimezoneOption[] = [
   { label: "Philippines (UTC+8:00)", value: "Asia/Manila" },
   { label: "Thailand (UTC+7:00)", value: "Asia/Bangkok" },
   { label: "Vietnam (UTC+7:00)", value: "Asia/Ho_Chi_Minh" },
-  { label: "Indonesia — Jakarta (UTC+7:00)", value: "Asia/Jakarta" },
-  { label: "Indonesia — Bali (UTC+8:00)", value: "Asia/Makassar" },
+  {
+    label: "Indonesia — Jakarta (UTC+7:00)",
+    value: "Asia/Jakarta",
+  },
+  {
+    label: "Indonesia — Bali (UTC+8:00)",
+    value: "Asia/Makassar",
+  },
   { label: "China (UTC+8:00)", value: "Asia/Shanghai" },
   { label: "Japan (UTC+9:00)", value: "Asia/Tokyo" },
   { label: "South Korea (UTC+9:00)", value: "Asia/Seoul" },
-  { label: "Australia — Sydney (UTC+10/+11)", value: "Australia/Sydney" },
-  { label: "New Zealand (UTC+12/+13)", value: "Pacific/Auckland" },
-  { label: "United Kingdom (UTC+0/+1)", value: "Europe/London" },
-  { label: "Germany (UTC+1/+2)", value: "Europe/Berlin" },
-  { label: "France (UTC+1/+2)", value: "Europe/Paris" },
-  { label: "United States — Eastern (UTC-5/-4)", value: "America/New_York" },
-  { label: "United States — Central (UTC-6/-5)", value: "America/Chicago" },
-  { label: "United States — Mountain (UTC-7/-6)", value: "America/Denver" },
-  { label: "United States — Pacific (UTC-8/-7)", value: "America/Los_Angeles" },
-  { label: "Canada — Toronto (UTC-5/-4)", value: "America/Toronto" },
+  {
+    label: "Australia — Sydney (UTC+10/+11)",
+    value: "Australia/Sydney",
+  },
+  {
+    label: "New Zealand (UTC+12/+13)",
+    value: "Pacific/Auckland",
+  },
+  {
+    label: "United Kingdom (UTC+0/+1)",
+    value: "Europe/London",
+  },
+  {
+    label: "Germany (UTC+1/+2)",
+    value: "Europe/Berlin",
+  },
+  {
+    label: "France (UTC+1/+2)",
+    value: "Europe/Paris",
+  },
+  {
+    label: "United States — Eastern (UTC-5/-4)",
+    value: "America/New_York",
+  },
+  {
+    label: "United States — Central (UTC-6/-5)",
+    value: "America/Chicago",
+  },
+  {
+    label: "United States — Mountain (UTC-7/-6)",
+    value: "America/Denver",
+  },
+  {
+    label: "United States — Pacific (UTC-8/-7)",
+    value: "America/Los_Angeles",
+  },
+  {
+    label: "Canada — Toronto (UTC-5/-4)",
+    value: "America/Toronto",
+  },
   { label: "UAE (UTC+4:00)", value: "Asia/Dubai" },
-  { label: "Saudi Arabia (UTC+3:00)", value: "Asia/Riyadh" },
-  { label: "South Africa (UTC+2:00)", value: "Africa/Johannesburg" },
+  {
+    label: "Saudi Arabia (UTC+3:00)",
+    value: "Asia/Riyadh",
+  },
+  {
+    label: "South Africa (UTC+2:00)",
+    value: "Africa/Johannesburg",
+  },
 ];
 
 // 30-minute interval time options from 00:00 to 23:30
 export const TIME_OPTIONS: TimezoneOption[] = Array.from(
   { length: 48 },
   (_, i) => {
-    const h = Math.floor(i / 2).toString().padStart(2, "0");
-    const m = (i % 2 === 0 ? "00" : "30");
+    const h = Math.floor(i / 2)
+      .toString()
+      .padStart(2, "0");
+
+    const m = i % 2 === 0 ? "00" : "30";
     const value = `${h}:${m}`;
+
     const hour12 = i / 2;
     const suffix = hour12 >= 12 ? "PM" : "AM";
-    const displayHour = hour12 === 0 ? 12 : hour12 > 12 ? hour12 - 12 : hour12;
+
+    const displayHour =
+      hour12 === 0
+        ? 12
+        : hour12 > 12
+          ? hour12 - 12
+          : hour12;
+
     const label = `${displayHour}:${m} ${suffix}`;
-    return { label, value };
+
+    return {
+      label,
+      value,
+    };
   },
 );

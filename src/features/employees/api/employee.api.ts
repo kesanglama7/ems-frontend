@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import type {
   CreateEmployeePayload,
   CreateEmployeeResponse,
+  DepartmentColleaguesResponse,
   EmployeeDetailsResponse,
   EmployeeListQuery,
   EmployeeListResponse,
@@ -74,5 +75,12 @@ export async function updateEmployeeStatus(
       payload,
     );
 
+  return response.data;
+}
+
+export async function getDepartmentColleagues(): Promise<DepartmentColleaguesResponse> {
+  const response = await api.get<DepartmentColleaguesResponse>(
+    "/employees/me/department-colleagues",
+  );
   return response.data;
 }
