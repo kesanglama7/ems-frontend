@@ -31,7 +31,6 @@ export function LoginForm() {
     defaultValues: {
       email: "",
       password: "",
-      authMode: "COOKIE"
     },
   });
 
