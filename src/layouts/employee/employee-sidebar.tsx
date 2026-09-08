@@ -62,8 +62,8 @@ const employeeNavigation: NavItem[] = [
     icon: FileText,
   },
   {
-    title: "Colleagues",
-    href: "/employee/colleagues",
+    title: "Teams",
+    href: "/employee/teams",
     icon: Users,
   },
 ];

@@ -152,17 +152,32 @@ export interface UpdateEmployeeStatusResponse {
   };
 }
 
-// ─── Department Colleagues ──────────────────────────────────────────────────
+// ─── Team members ───────────────────────────────────────────────────────────
 
-export interface DepartmentColleaguesResponse {
-  success: boolean;
-  data: DepartmentColleague[];
+export interface TeamMemberListQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  departmentId?: string;
 }
 
-export interface DepartmentColleague {
+export interface TeamMemberDepartment {
+  id: string;
+  name: string;
+}
+
+export interface TeamMembersResponse {
+  success: boolean;
+  data: TeamMember[];
+  meta: EmployeeListMeta;
+}
+
+export interface TeamMember {
   id: string;
   firstName: string;
   lastName: string;
   jobTitle: string | null;
-  profileImageUrl: string | undefined;
+  email: string;
+  department: TeamMemberDepartment | null;
+  profileImageUrl: string | null;
 }
