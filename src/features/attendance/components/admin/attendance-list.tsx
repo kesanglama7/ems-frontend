@@ -48,6 +48,8 @@ import { Portal } from "@/components/ui/portal";
 
 import { getInitials } from "@/lib/name-shorten";
 import {
+    formatMinutes,
+    formatTime,
   getFirstDayOfCurrentMonth,
   getLastDayOfCurrentMonth,
   getTodayDate,
@@ -73,25 +75,6 @@ import {
 
 import type { AttendanceRecord } from "@/features/attendance/types/attendance.types";
 
-function formatTime(dateStr: string | null): string {
-  if (!dateStr) return "-";
-
-  return new Date(dateStr).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function formatMinutes(minutes: number | null): string {
-  if (minutes === null) return "-";
-
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-
-  return hours > 0
-    ? `${hours}h ${mins}m`
-    : `${mins}m`;
-}
 
 export default function AdminAttendanceLists() {
   // ---------------------------------------------------------------------------
@@ -1077,9 +1060,8 @@ export default function AdminAttendanceLists() {
                           <span className="font-medium text-destructive">
                             +
                             {
-                              record.lateMinutes
+                              formatMinutes(record.lateMinutes)
                             }
-                            min
                           </span>
                         ) : (
                           <span className="text-muted-foreground">
@@ -1361,10 +1343,9 @@ export default function AdminAttendanceLists() {
                   <Badge variant="destructive">
                     Late{" "}
                     {
-                      detailData.data
-                        .lateMinutes
+                      formatMinutes(detailData.data
+                        .lateMinutes)
                     }
-                    min
                   </Badge>
                 )}
               </div>
@@ -1429,24 +1410,6 @@ export default function AdminAttendanceLists() {
 
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 {detailData.data
-                  .lateMinutes > 0 && (
-                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
-                    <p className="text-xs text-destructive">
-                      Late
-                    </p>
-
-                    <p className="font-semibold text-destructive">
-                      +
-                      {
-                        detailData.data
-                          .lateMinutes
-                      }
-                      min
-                    </p>
-                  </div>
-                )}
-
-                {detailData.data
                   .earlyMinutes > 0 && (
                   <div className="rounded-lg border bg-muted/30 p-3">
                     <p className="text-xs text-muted-foreground">
@@ -1454,11 +1417,10 @@ export default function AdminAttendanceLists() {
                     </p>
 
                     <p className="font-semibold">
-                      {
+                      {formatMinutes(
                         detailData.data
                           .earlyMinutes
-                      }
-                      min
+                      )}
                     </p>
                   </div>
                 )}
@@ -1473,10 +1435,11 @@ export default function AdminAttendanceLists() {
 
                     <p className="font-semibold">
                       {
-                        detailData.data
-                          .afterHoursMinutes
+                        formatMinutes(
+                          detailData.data
+                            .afterHoursMinutes
+                        )
                       }
-                      min
                     </p>
                   </div>
                 )}
@@ -1495,11 +1458,12 @@ export default function AdminAttendanceLists() {
                       <p className="font-semibold text-green-700 dark:text-green-400">
                         +
                         {
-                          detailData
-                            .data
-                            .overtimeMinutes
+                          formatMinutes(
+                            detailData
+                              .data
+                              .overtimeMinutes
+                          )
                         }
-                        min
                       </p>
                     </div>
                   )}

@@ -5,6 +5,7 @@ export const createLeaveRequestSchema = z
     leaveTypeId: z.string().min(1, "Please select a leave type."),
     startDate: z.string().min(1, "Start date is required."),
     endDate: z.string().min(1, "End date is required."),
+    duration: z.enum(["FULL_DAY", "FIRST_HALF", "SECOND_HALF"]),
     reason: z
       .string()
       .trim()

@@ -139,7 +139,7 @@ export interface AdminAttendanceQueryParams {
 
 export interface AttendanceResponse {
   success: boolean;
-  data: AttendanceRecord;
+  data: { attendance: AttendanceRecord | null; leave: { isOnLeave: boolean; duration?: "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF"; leaveType?: { id: string; name: string } }; canCheckIn: boolean };
 }
 
 export interface AttendanceListResponse {

@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 import { useCreateLeaveType } from "../../hooks/use-leave-types";
@@ -71,6 +72,11 @@ export function LeaveTypeFormDialog({
       defaultValues: {
         name: "",
         description: "",
+        yearlyAllowance: 0,
+        hasLimitedBalance: false,
+        allowHalfDay: true,
+        isEmployeeRequestable: true,
+        isPaid: true,
       },
     });
 
@@ -84,6 +90,11 @@ export function LeaveTypeFormDialog({
         name: leaveType.name,
         description:
           leaveType.description ?? "",
+        yearlyAllowance: leaveType.yearlyAllowance,
+        hasLimitedBalance: leaveType.hasLimitedBalance,
+        allowHalfDay: leaveType.allowHalfDay,
+        isEmployeeRequestable: leaveType.isEmployeeRequestable,
+        isPaid: leaveType.isPaid,
       });
 
       return;
@@ -92,6 +103,11 @@ export function LeaveTypeFormDialog({
     form.reset({
       name: "",
       description: "",
+      yearlyAllowance: 0,
+      hasLimitedBalance: false,
+      allowHalfDay: true,
+      isEmployeeRequestable: true,
+      isPaid: true,
     });
   }, [
     open,
@@ -107,12 +123,13 @@ export function LeaveTypeFormDialog({
         const payload:
           UpdateLeaveTypePayload = {
           name: values.name.trim(),
-
-          // Empty string intentionally
-          // allows an existing description
-          // to be cleared.
           description:
             values.description.trim(),
+          yearlyAllowance: values.yearlyAllowance,
+          hasLimitedBalance: values.hasLimitedBalance,
+          allowHalfDay: values.allowHalfDay,
+          isEmployeeRequestable: values.isEmployeeRequestable,
+          isPaid: values.isPaid,
         };
 
         const response =
@@ -132,6 +149,11 @@ export function LeaveTypeFormDialog({
           description:
             description ||
             undefined,
+          yearlyAllowance: values.yearlyAllowance,
+          hasLimitedBalance: values.hasLimitedBalance,
+          allowHalfDay: values.allowHalfDay,
+          isEmployeeRequestable: values.isEmployeeRequestable,
+          isPaid: values.isPaid,
         };
 
         const response =
@@ -181,7 +203,7 @@ export function LeaveTypeFormDialog({
             onSubmit,
           )}
         >
-          <FieldGroup>
+          <FieldGroup className="-space-y-2">
             <Controller
               name="name"
               control={form.control}
@@ -224,6 +246,56 @@ export function LeaveTypeFormDialog({
               )}
             />
 
+            <Controller 
+              name="hasLimitedBalance" 
+              control={form.control} 
+              render={({ field }) => 
+                <Field orientation="horizontal">
+                  <div className="flex-1">
+                    <FieldLabel>Limited yearly balance</FieldLabel>
+                  </div>
+                  <Switch checked={field.value} onCheckedChange={field.onChange}/>
+                </Field>} 
+            />
+              {form.watch("hasLimitedBalance") && 
+                <Controller 
+                  name="yearlyAllowance" 
+                  control={form.control} render={({ field, fieldState }) => 
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>Days per year</FieldLabel>
+                      <Input {...field} type="number" min="0" step="0.5" onChange={(event) => field.onChange(event.target.valueAsNumber)} aria-invalid={fieldState.invalid}/>
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]}/>}
+                    </Field>} 
+                />}
+              <hr className="border-t" />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Controller 
+                  name="allowHalfDay" 
+                  control={form.control} render={({ field }) => 
+                    <Field orientation="horizontal">
+                      <FieldLabel>Half day</FieldLabel>
+                      <Switch checked={field.value} onCheckedChange={field.onChange}/>
+                    </Field>} 
+                />
+                <Controller 
+                name="isEmployeeRequestable" 
+                control={form.control} render={({ field }) =>
+                  <Field orientation="horizontal">
+                    <FieldLabel>Employee request</FieldLabel>
+                    <Switch checked={field.value} onCheckedChange={field.onChange}/>
+                  </Field>} 
+                />
+                <Controller 
+                name="isPaid" 
+                control={form.control} 
+                render={({ field }) => 
+                  <Field orientation="horizontal">
+                    <FieldLabel>Paid</FieldLabel>
+                    <Switch checked={field.value} onCheckedChange={field.onChange}/>
+                  </Field>}
+                />
+              </div>
+            <hr className="border-t" />
             <Controller
               name="description"
               control={form.control}

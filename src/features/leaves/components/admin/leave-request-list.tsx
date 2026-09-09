@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Check, Eye, X } from "lucide-react";
+import { CalendarDays, Eye} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/name-shorten";
 
-import { useAdminLeaves } from "../../hooks/use-admin-leaves";
+import { useAdminLeaves} from "../../hooks/use-admin-leaves";
 import { LEAVE_STATUS_LABELS } from "../../constants/leave.constants";
 import type { AdminLeaveQueryParams, LeaveStatus } from "../../types/leave.types";
-import { ApproveLeaveDialog } from "./approve-leave-dialog";
-import { RejectLeaveDialog } from "./reject-leave-dialog";
 import { LeaveRequestDetailDialog } from "./leave-request-detail-dialog";
 
 function formatDate(value: string) {
@@ -42,6 +40,8 @@ function getStatusVariant(status: LeaveStatus) {
       return "destructive" as const;
     case "CANCELLED":
       return "secondary" as const;
+    case "AUTO_REJECTED":
+      return "destructive" as const;
   }
 }
 
@@ -53,8 +53,6 @@ export function LeaveRequestList({ filters }: LeaveRequestListProps) {
   const { data: response, isLoading } = useAdminLeaves(filters);
   const leaves = response?.data ?? [];
 
-  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
-  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedLeaveId, setSelectedLeaveId] = useState<string>("");
 
@@ -66,16 +64,6 @@ export function LeaveRequestList({ filters }: LeaveRequestListProps) {
       startDate: formatDate(leave.startDate),
       endDate: formatDate(leave.endDate),
     };
-  }
-
-  function handleApprove(leaveId: string) {
-    setSelectedLeaveId(leaveId);
-    setApproveDialogOpen(true);
-  }
-
-  function handleReject(leaveId: string) {
-    setSelectedLeaveId(leaveId);
-    setRejectDialogOpen(true);
   }
 
   function handleViewDetail(leaveId: string) {
@@ -99,9 +87,10 @@ export function LeaveRequestList({ filters }: LeaveRequestListProps) {
               <TableHead>Leave Type</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>End Date</TableHead>
+              <TableHead>Days</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-24">
-                <span className="sr-only">Actions</span>
+                Actions
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -124,6 +113,7 @@ export function LeaveRequestList({ filters }: LeaveRequestListProps) {
                   <TableCell>
                     <Skeleton className="h-5 w-16" />
                   </TableCell>
+                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                   <TableCell>
                     <Skeleton className="h-8 w-20" />
                   </TableCell>
@@ -141,11 +131,6 @@ export function LeaveRequestList({ filters }: LeaveRequestListProps) {
                             leave.employee.lastName,
                           )}
                         </AvatarFallback>
-                        {leave.employee.user && (
-                          <AvatarImage
-                            src={`/api/avatar/${leave.employee.id}`}
-                          />
-                        )}
                       </Avatar>
                       <div>
                         <p className="font-medium">
@@ -162,6 +147,7 @@ export function LeaveRequestList({ filters }: LeaveRequestListProps) {
                   </TableCell>
                   <TableCell>{formatDate(leave.startDate)}</TableCell>
                   <TableCell>{formatDate(leave.endDate)}</TableCell>
+                  <TableCell>{leave.requestedDays} ({leave.duration === "FULL_DAY" ? "full" : leave.duration === "FIRST_HALF" ? "first half" : "second half"})</TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(leave.status)}>
                       {LEAVE_STATUS_LABELS[leave.status]}
@@ -178,37 +164,13 @@ export function LeaveRequestList({ filters }: LeaveRequestListProps) {
                       >
                         <Eye className="size-4" />
                       </Button>
-                      {leave.status === "PENDING" && (
-                        <>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950"
-                            onClick={() => handleApprove(leave.id)}
-                            title="Approve"
-                          >
-                            <Check className="size-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => handleReject(leave.id)}
-                            title="Reject"
-                          >
-                            <X className="size-4" />
-                          </Button>
-                        </>
-                      )}
                     </div>
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-64 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-64 text-center text-muted-foreground">
                   <div className="flex flex-col items-center justify-center">
                     <div className="bg-muted flex size-11 items-center justify-center rounded-full">
                       <CalendarDays className="text-muted-foreground size-5" />
@@ -224,21 +186,6 @@ export function LeaveRequestList({ filters }: LeaveRequestListProps) {
           </TableBody>
         </Table>
       </div>
-
-      <ApproveLeaveDialog
-        open={approveDialogOpen}
-        onOpenChange={setApproveDialogOpen}
-        leaveId={selectedLeaveId}
-        leaveSummary={leaveSummary}
-      />
-
-      <RejectLeaveDialog
-        open={rejectDialogOpen}
-        onOpenChange={setRejectDialogOpen}
-        leaveId={selectedLeaveId}
-        leaveSummary={leaveSummary}
-      />
-
       <LeaveRequestDetailDialog
         open={detailDialogOpen}
         onOpenChange={setDetailDialogOpen}

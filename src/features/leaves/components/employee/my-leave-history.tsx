@@ -37,6 +37,8 @@ function getStatusVariant(status: LeaveStatus) {
       return "destructive";
     case "CANCELLED":
       return "secondary";
+    case "AUTO_REJECTED":
+      return "destructive";
   }
 }
 
@@ -97,7 +99,7 @@ export function MyLeaveHistory() {
               <TableHead>Leave Type</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>End Date</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Days</TableHead><TableHead>Status</TableHead>
               <TableHead>Reason</TableHead>
               <TableHead className="w-24">
                 <span className="sr-only">Actions</span>
@@ -112,6 +114,7 @@ export function MyLeaveHistory() {
                 </TableCell>
                 <TableCell>{formatDate(leave.startDate)}</TableCell>
                 <TableCell>{formatDate(leave.endDate)}</TableCell>
+                <TableCell>{leave.requestedDays} · {leave.duration === "FULL_DAY" ? "Full" : leave.duration === "FIRST_HALF" ? "First half" : "Second half"}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusVariant(leave.status)}>
                     {LEAVE_STATUS_LABELS[leave.status]}

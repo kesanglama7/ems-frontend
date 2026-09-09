@@ -297,6 +297,7 @@ export function LeaveTypeList() {
                     <TableHead>
                       Status
                     </TableHead>
+                    <TableHead>Allowance</TableHead>
 
                     <TableHead className="w-12">
                       <span className="sr-only">
@@ -344,9 +345,10 @@ export function LeaveTypeList() {
                                 isActive: checked,
                               });
                             }}
-                            disabled={toggleMutation.isPending}
+                            disabled={toggleMutation.isPending || leaveType.isSystem}
                           />
                         </TableCell>
+                        <TableCell>{leaveType.hasLimitedBalance ? `${leaveType.yearlyAllowance} days` : "Unlimited"}</TableCell>
 
                         <TableCell>
                           <Button
@@ -354,7 +356,7 @@ export function LeaveTypeList() {
                             variant="ghost"
                             size="icon"
                             aria-label={`Edit ${leaveType.name}`}
-                            onClick={() => setEditLeaveType(leaveType)}
+                            onClick={() => setEditLeaveType(leaveType)} disabled={leaveType.isSystem}
                           >
                             <Pencil className="size-4" />
                           </Button>
@@ -439,7 +441,8 @@ export function LeaveTypeList() {
                             isActive: checked,
                           });
                         }}
-                        disabled={toggleMutation.isPending}
+                        disabled={toggleMutation.isPending || leaveType.isSystem}
+                        aria-label={`Toggle ${leaveType.name}`}
                       />
                     </div>
                   </div>

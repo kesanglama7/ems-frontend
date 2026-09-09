@@ -160,7 +160,9 @@ export const CheckInControl = () => {
   // ---------------------------------------------------------------------------
 
   const attendance =
-    todayResponse?.data;
+    todayResponse?.data.attendance;
+  const todayLeave = todayResponse?.data.leave;
+  const canCheckIn = todayResponse?.data.canCheckIn ?? true;
 
   const isCheckedIn =
     !!attendance?.checkInAt &&
@@ -363,6 +365,7 @@ export const CheckInControl = () => {
       </CardHeader>
 
       <CardContent className="space-y-5">
+        {todayLeave?.isOnLeave && <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-200">You are on {todayLeave.leaveType?.name ?? "approved leave"} today{todayLeave.duration && todayLeave.duration !== "FULL_DAY" ? ` (${todayLeave.duration.replaceAll("_", " ").toLowerCase()})` : ""}. {canCheckIn ? "Half-day attendance is still available." : "Check-in is disabled for this full-day leave."}</div>}
         {/* Attendance information */}
 
         {attendance ? (
@@ -623,6 +626,7 @@ export const CheckInControl = () => {
               }
               disabled={
                 isCheckedIn ||
+                !canCheckIn ||
                 checkIn.isPending ||
                 requestingLocation ||
                 (isOnField &&

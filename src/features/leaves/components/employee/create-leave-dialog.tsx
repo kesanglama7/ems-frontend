@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +16,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -31,10 +29,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { getTodayDate } from "@/lib/general";
 
-import { useCreateLeaveRequest } from "../../hooks/use-my-leaves";
+import {
+  useCreateLeaveRequest,
+  useLeavePreview,
+} from "../../hooks/use-my-leaves";
 import { useLeaveTypes } from "../../hooks/use-leave-types";
 import {
   createLeaveRequestSchema,
@@ -50,16 +50,28 @@ export function CreateLeaveDialog({
   open,
   onOpenChange,
 }: CreateLeaveDialogProps) {
-  const { mutateAsync, isPending } = useCreateLeaveRequest();
-  const { data: leaveTypesQuery } = useLeaveTypes();
-  const leaveTypes = leaveTypesQuery?.data ?? [];
+  const {
+    mutateAsync: createLeaveRequest,
+    isPending: isCreating,
+  } = useCreateLeaveRequest();
 
-  const leaveTypeItems = leaveTypes
-    .filter((type) => type.isActive)
-    .map((type) => ({
-      label: type.name,
-      value: type.id,
-    }));
+  const { data: leaveTypesQuery } = useLeaveTypes();
+
+  const leaveTypes = useMemo(
+    () => leaveTypesQuery?.data ?? [],
+    [leaveTypesQuery?.data],
+  );
+
+  const leaveTypeItems = useMemo(
+    () =>
+      leaveTypes
+        .filter((leaveType) => leaveType.isActive)
+        .map((leaveType) => ({
+          label: leaveType.name,
+          value: String(leaveType.id),
+        })),
+    [leaveTypes],
+  );
 
   const form = useForm<CreateLeaveRequestFormValues>({
     resolver: zodResolver(createLeaveRequestSchema),
@@ -67,12 +79,72 @@ export function CreateLeaveDialog({
       leaveTypeId: "",
       startDate: "",
       endDate: "",
+      duration: "FULL_DAY",
       reason: "",
     },
   });
 
-  const { watch, reset, control, handleSubmit } = form;
-  const formData = watch();
+  const {
+    control,
+    getValues,
+    handleSubmit,
+    reset,
+    setValue,
+    trigger,
+    watch,
+  } = form;
+
+  const leaveTypeId = watch("leaveTypeId");
+  const startDate = watch("startDate");
+  const duration = watch("duration");
+
+  const selectedLeaveType = useMemo(
+    () =>
+      leaveTypes.find(
+        (leaveType) => String(leaveType.id) === leaveTypeId,
+      ),
+    [leaveTypes, leaveTypeId],
+  );
+
+  const durationItems = useMemo(() => {
+    const items = [
+      {
+        label: "Full day",
+        value: "FULL_DAY",
+      },
+    ];
+
+    if (selectedLeaveType?.allowHalfDay !== false) {
+      items.push(
+        {
+          label: "First half",
+          value: "FIRST_HALF",
+        },
+        {
+          label: "Second half",
+          value: "SECOND_HALF",
+        },
+      );
+    }
+
+    return items;
+  }, [selectedLeaveType?.allowHalfDay]);
+
+  useEffect(() => {
+    if (
+      selectedLeaveType?.allowHalfDay === false &&
+      getValues("duration") !== "FULL_DAY"
+    ) {
+      setValue("duration", "FULL_DAY", {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  }, [
+    selectedLeaveType?.allowHalfDay,
+    getValues,
+    setValue,
+  ]);
 
   useEffect(() => {
     if (!open) {
@@ -80,66 +152,102 @@ export function CreateLeaveDialog({
     }
   }, [open, reset]);
 
-  async function onSubmit(values: CreateLeaveRequestFormValues) {
+  async function onSubmit(
+    values: CreateLeaveRequestFormValues,
+  ) {
     try {
-      await mutateAsync(values);
+      await createLeaveRequest(values);
+
+      reset();
       onOpenChange(false);
-    } catch (error) {
-      // useCreateLeaveRequest hook already handles toasts
+    } catch {
+      // The useCreateLeaveRequest hook handles error toasts.
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Apply for Leave</DialogTitle>
+
           <DialogDescription>
             Submit a new leave request for approval.
           </DialogDescription>
         </DialogHeader>
 
-        <form id="leave-request-form" onSubmit={handleSubmit(onSubmit)}>
-          <FieldGroup>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <FieldGroup className="-space-y-4">
             <Controller
               name="leaveTypeId"
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Leave Type</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>
+                    Leave Type
+                  </FieldLabel>
+
                   <Select
                     items={leaveTypeItems}
                     value={field.value}
                     onValueChange={field.onChange}
                   >
-                    <SelectTrigger id={field.name} className="w-full">
+                    <SelectTrigger
+                      id={field.name}
+                      className="w-full"
+                      aria-invalid={fieldState.invalid}
+                    >
                       <SelectValue placeholder="Select a leave type" />
                     </SelectTrigger>
-                    <SelectContent />
+
+                    <SelectContent>
+                      {leaveTypeItems.map((item) => (
+                        <SelectItem
+                          key={item.value}
+                          value={item.value}
+                        >
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
+
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <FieldError
+                      errors={[fieldState.error]}
+                    />
                   )}
                 </Field>
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Controller
                 name="startDate"
                 control={control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Start Date</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>
+                      Start Date
+                    </FieldLabel>
+
                     <Input
                       {...field}
-                      type="date"
                       id={field.name}
+                      type="date"
                       min={getTodayDate()}
                       aria-invalid={fieldState.invalid}
                     />
+
                     {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
+                      <FieldError
+                        errors={[fieldState.error]}
+                      />
                     )}
                   </Field>
                 )}
@@ -150,16 +258,23 @@ export function CreateLeaveDialog({
                 control={control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>End Date</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>
+                      End Date
+                    </FieldLabel>
+
                     <Input
                       {...field}
-                      type="date"
                       id={field.name}
-                      min={formData.startDate || getTodayDate()}
+                      type="date"
+                      min={startDate || getTodayDate()}
+                      disabled={duration !== "FULL_DAY"}
                       aria-invalid={fieldState.invalid}
                     />
+
                     {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
+                      <FieldError
+                        errors={[fieldState.error]}
+                      />
                     )}
                   </Field>
                 )}
@@ -167,45 +282,108 @@ export function CreateLeaveDialog({
             </div>
 
             <Controller
+              name="duration"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>
+                    Duration
+                  </FieldLabel>
+
+                  <Select
+                    items={durationItems}
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+
+                      if (value !== "FULL_DAY") {
+                        const selectedStartDate =
+                          getValues("startDate");
+
+                        if (selectedStartDate) {
+                          setValue(
+                            "endDate",
+                            selectedStartDate,
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            },
+                          );
+                        }
+                      }
+                    }}
+                  >
+                    <SelectTrigger
+                      id={field.name}
+                      className="w-full"
+                      aria-invalid={fieldState.invalid}
+                    >
+                      <SelectValue placeholder="Select duration" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {durationItems.map((item) => (
+                        <SelectItem
+                          key={item.value}
+                          value={item.value}
+                        >
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {fieldState.invalid && (
+                    <FieldError
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
               name="reason"
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Reason</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>
+                    Reason
+                  </FieldLabel>
+
                   <Textarea
                     {...field}
                     id={field.name}
                     rows={4}
-                    maxLength={500}
-                    placeholder="Briefly describe why you are applying for leave."
+                    placeholder="Enter the reason for your leave request"
                     aria-invalid={fieldState.invalid}
                   />
-                  <FieldDescription>
-                    Maximum 500 characters.
-                  </FieldDescription>
+
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <FieldError
+                      errors={[fieldState.error]}
+                    />
                   )}
                 </Field>
               )}
             />
           </FieldGroup>
-        </form>
 
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isPending}
-            onClick={() => onOpenChange(false)}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" form="leave-request-form" disabled={isPending}>
-            {isPending && <LoaderCircle className="size-4 animate-spin" />}
-            {isPending ? "Submitting..." : "Submit Request"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+
+            <Button
+              type="submit"
+              disabled={isCreating}
+              className="w-full sm:w-auto mt-4"
+            >
+              {isCreating && (
+                <LoaderCircle className="animate-spin" />
+              )}
+
+              Submit Request
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

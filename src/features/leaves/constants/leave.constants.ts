@@ -5,6 +5,7 @@ export const LEAVE_STATUS_LABELS: Record<LeaveStatus, string> = {
   APPROVED: "Approved",
   REJECTED: "Rejected",
   CANCELLED: "Cancelled",
+  AUTO_REJECTED: "Auto rejected",
 };
 
 export const leaveKeys = {
@@ -15,10 +16,13 @@ export const leaveKeys = {
 
   my: () => [...leaveKeys.all, "my"] as const,
   myDetail: (id: string) => [...leaveKeys.my(), id] as const,
+  myBalance: (year: number) => [...leaveKeys.my(), "balance", year] as const,
 
   admin: () => [...leaveKeys.all, "admin"] as const,
   adminList: (filters: object) =>
     [...leaveKeys.admin(), "list", filters] as const,
   adminDetail: (id: string) =>
     [...leaveKeys.admin(), "detail", id] as const,
+  adminSummary: (year: number) => [...leaveKeys.admin(), "summary", year] as const,
+  adminBalances: (year: number) => [...leaveKeys.admin(), "balances", year] as const,
 };

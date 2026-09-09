@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import type { AdminLeaveQueryParams } from "../../types/leave.types";
 import { LeaveRequestFilters } from "./leave-request-filters";
 import { LeaveRequestList } from "./leave-request-list";
+import { LeaveAdminOverview } from "./leave-admin-overview";
 
 export function AdminLeaveLists() {
   const [filters, setFilters] = useState<AdminLeaveQueryParams>({});
@@ -17,7 +18,8 @@ export function AdminLeaveLists() {
   );
 
   return (
-    <main className="flex flex-1 flex-col gap-4">
+    <main className="flex flex-1 flex-col gap-8">
+      <LeaveAdminOverview />
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
           Leave Requests

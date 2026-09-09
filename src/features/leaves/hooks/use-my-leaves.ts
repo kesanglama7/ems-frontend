@@ -6,6 +6,8 @@ import {
   getMyLeaves,
   getMyLeaveDetail,
   cancelLeave,
+  getMyLeaveBalance,
+  previewLeaveRequest,
 } from "../api/leaves.api";
 import { leaveKeys } from "../constants/leave.constants";
 
@@ -14,6 +16,14 @@ export function useMyLeaves() {
     queryKey: leaveKeys.my(),
     queryFn: getMyLeaves,
   });
+}
+
+export function useMyLeaveBalance(year = new Date().getFullYear()) {
+  return useQuery({ queryKey: leaveKeys.myBalance(year), queryFn: () => getMyLeaveBalance(year) });
+}
+
+export function useLeavePreview() {
+  return useMutation({ mutationFn: previewLeaveRequest, onError: (error) => toast.error(getApiErrorMessage(error)) });
 }
 
 export function useMyLeaveDetail(leaveId: string) {
@@ -33,6 +43,7 @@ export function useCreateLeaveRequest() {
       await queryClient.invalidateQueries({
         queryKey: leaveKeys.my(),
       });
+      await queryClient.invalidateQueries({ queryKey: leaveKeys.all });
       toast.success(data.message || "Leave request submitted successfully.");
     },
     onError: (error) => {

@@ -25,7 +25,7 @@ export function AdminDashboardContent() {
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-8 max-w-7xl mx-auto w-full">
+    <main className="flex flex-1 flex-col gap-8 max-w-8xl mx-auto w-full">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">

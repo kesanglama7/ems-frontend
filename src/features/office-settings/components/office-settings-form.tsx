@@ -26,13 +26,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 import {
   useOfficeSettings,
@@ -45,7 +38,6 @@ import {
 } from "../schemas/update-office-setting.schema";
 
 import {
-  TIMEZONE_OPTIONS,
   WORKING_DAYS,
   WORKING_DAY_LABELS,
 } from "../types/office-settings.types";
@@ -291,7 +283,7 @@ export function OfficeSettingsForm() {
 
   return (
     <Card className="overflow-hidden">
-      <div className="p-6">
+      <div className="px-4">
         <div>
           <h2 className="text-xl font-semibold tracking-tight">
             Office Settings
@@ -374,7 +366,7 @@ export function OfficeSettingsForm() {
                 )}
               />
 
-              <Controller
+              {/* <Controller
                 name="timezone"
                 control={form.control}
                 render={({
@@ -434,7 +426,7 @@ export function OfficeSettingsForm() {
                     )}
                   </Field>
                 )}
-              />
+              /> */}
 
               <Controller
                 name="gracePeriodMinutes"
@@ -820,7 +812,7 @@ export function OfficeSettingsForm() {
                       <Input
                         id={field.name}
                         type="number"
-                        min={20}
+                        min={1}
                         max={5000}
                         value={
                           Number.isFinite(

@@ -7,7 +7,7 @@ import {
   useForm,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ import {
 } from "../schemas/create-employee.schema";
 import type { CreateEmployeePayload } from "../types/employee.types";
 import { workModeItems } from "../constants/employee.enums";
+import { useState } from "react";
 
 const NO_DEPARTMENT = "NONE";
 
@@ -59,6 +60,7 @@ export function CreateEmployeeForm() {
 
   const departmentsQuery =
     useDepartments();
+  const [showPassword, setShowPassword] = useState(false);
 
   const form =
     useForm<CreateEmployeeFormValues>({
@@ -194,7 +196,7 @@ export function CreateEmployeeForm() {
                         field.name
                       }
                     >
-                      First name
+                      First name <span className="text-red-500">*</span>
                     </FieldLabel>
 
                     <Input
@@ -235,7 +237,7 @@ export function CreateEmployeeForm() {
                         field.name
                       }
                     >
-                      Last name
+                      Last name <span className="text-red-500">*</span>
                     </FieldLabel>
 
                     <Input
@@ -278,7 +280,7 @@ export function CreateEmployeeForm() {
                         field.name
                       }
                     >
-                      Email
+                      Email <span className="text-red-500">*</span>
                     </FieldLabel>
 
                     <Input
@@ -309,7 +311,7 @@ export function CreateEmployeeForm() {
                 render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor={field.name}>
-                        Phone
+                        Phone <span className="text-red-500">*</span>
                     </FieldLabel>
 
                     <div
@@ -416,7 +418,7 @@ export function CreateEmployeeForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>Work Mode</FieldLabel>
+                  <FieldLabel>Work Mode <span className="text-red-500">*</span></FieldLabel>
 
                   <Select
                     items={workModeItems}
@@ -571,50 +573,56 @@ export function CreateEmployeeForm() {
           </div>
 
           <Controller
-            name="password"
-            control={form.control}
-            render={({
-              field,
-              fieldState,
-            }) => (
-              <Field
-                data-invalid={
-                  fieldState.invalid
-                }
-                className="max-w-md"
-              >
-                <FieldLabel
-                  htmlFor={field.name}
-                >
-                  Initial password
-                </FieldLabel>
+          name="password"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field
+              data-invalid={fieldState.invalid}
+              className="max-w-md"
+            >
+              <FieldLabel htmlFor={field.name}>
+                Initial password <span className="text-red-500">*</span>
+              </FieldLabel>
 
+              {/* Relative container for positioning the toggle button */}
+              <div className="relative">
                 <Input
                   {...field}
                   id={field.name}
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  aria-invalid={
-                    fieldState.invalid
-                  }
+                  aria-invalid={fieldState.invalid}
                   placeholder="Minimum 8 characters"
+                  className="pr-10" // Extra padding to prevent text from overlapping the icon
                 />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:bg-transparent hover:text-foreground"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="size-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="size-4" aria-hidden="true" />
+                  )}
+                  <span className="sr-only">
+                    {showPassword ? "Hide password" : "Show password"}
+                  </span>
+                </Button>
+              </div>
 
-                <FieldDescription>
-                  The employee will use
-                  this password to sign in.
-                </FieldDescription>
+              <FieldDescription>
+                The employee will use this password to sign in.
+              </FieldDescription>
 
-                {fieldState.invalid && (
-                  <FieldError
-                    errors={[
-                      fieldState.error,
-                    ]}
-                  />
-                )}
-              </Field>
-            )}
-          />
+              {fieldState.invalid && (
+                <FieldError errors={[fieldState.error]} />
+              )}
+            </Field>
+          )}
+        />
         </div>
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

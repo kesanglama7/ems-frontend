@@ -1,12 +1,15 @@
 "use client";
 
-import { CalendarDays, FileText, User } from "lucide-react";
+import { useState } from "react";
+import { Check, User, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -15,27 +18,32 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminLeaveDetail } from "../../hooks/use-admin-leaves";
 import { LEAVE_STATUS_LABELS } from "../../constants/leave.constants";
 import type { LeaveStatus } from "../../types/leave.types";
+import { ApproveLeaveDialog } from "./approve-leave-dialog";
+import { RejectLeaveDialog } from "./reject-leave-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/name-shorten";
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
+// Helper Functions
+const formatDate = (value: string) =>
+  new Intl.DateTimeFormat("en", {
     year: "numeric",
     month: "short",
     day: "numeric",
   }).format(new Date(value));
-}
 
-function getStatusVariant(status: LeaveStatus) {
+const formatDuration = (duration: string) => 
+  duration.replace("_", " ").toLowerCase();
+
+const getStatusVariant = (status: LeaveStatus) => {
   switch (status) {
-    case "PENDING":
-      return "outline" as const;
-    case "APPROVED":
-      return "default" as const;
+    case "PENDING": return "outline";
+    case "APPROVED": return "default";
     case "REJECTED":
-      return "destructive" as const;
-    case "CANCELLED":
-      return "secondary" as const;
+    case "AUTO_REJECTED": return "destructive";
+    case "CANCELLED": return "secondary";
+    default: return "default";
   }
-}
+};
 
 interface LeaveRequestDetailDialogProps {
   open: boolean;
@@ -48,117 +56,172 @@ export function LeaveRequestDetailDialog({
   onOpenChange,
   leaveId,
 }: LeaveRequestDetailDialogProps) {
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+
   const { data: response, isPending } = useAdminLeaveDetail(leaveId);
   const leave = response?.data;
 
+  const leaveSummary = leave
+    ? {
+        employeeName: `${leave.employee.firstName} ${leave.employee.lastName}`,
+        leaveType: leave.leaveType.name,
+        startDate: formatDate(leave.startDate),
+        endDate: formatDate(leave.endDate),
+      }
+    : { employeeName: "", leaveType: "", startDate: "", endDate: "" };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Leave request details</DialogTitle>
-          <DialogDescription>
-            Full details for this leave request.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Leave Request Details</DialogTitle>
+            <DialogDescription>
+              Review the employee&apos;s request before making a decision.
+            </DialogDescription>
+          </DialogHeader>
 
-        {isPending ? (
-          <div className="space-y-4">
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-          </div>
-        ) : leave ? (
-          <div className="space-y-4">
-            {/* Employee info */}
-            <div className="rounded-lg border bg-muted/30 p-4">
-              <div className="flex items-start gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-background">
-                  <User className="size-5 text-muted-foreground" />
+          {isPending ? (
+            <div className="space-y-6 py-4">
+              <div className="flex items-center gap-3">
+                <Skeleton className="size-10 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">
-                    {leave.employee.firstName} {leave.employee.lastName}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {leave.employee.employeeCode}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {leave.employee.user.email}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {leave.employee.department.name}
-                  </p>
-                </div>
+              </div>
+              <Skeleton className="h-24 w-full rounded-lg" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-16 w-full rounded-md" />
               </div>
             </div>
-
-            {/* Leave info */}
-            <div className="rounded-lg border bg-muted/30 p-4">
-              <div className="flex items-start gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-background">
-                  <CalendarDays className="size-5 text-muted-foreground" />
-                </div>
-                <div className="min-w-0 flex-1 space-y-1">
-                  <p className="truncate font-medium">
-                    {leave.leaveType.name}
-                  </p>
-                  {leave.leaveType.description && (
-                    <p className="text-sm text-muted-foreground">
-                      {leave.leaveType.description}
-                    </p>
-                  )}
-                  <p className="text-sm text-muted-foreground">
-                    {formatDate(leave.startDate)} - {formatDate(leave.endDate)}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Reason */}
-            {leave.reason && (
-              <div className="rounded-lg border bg-muted/30 p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-background">
-                    <FileText className="size-5 text-muted-foreground" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">Reason</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {leave.reason}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Status & Review */}
-            <div className="rounded-lg border p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Status</p>
-                <Badge variant={getStatusVariant(leave.status)}>
-                  {LEAVE_STATUS_LABELS[leave.status]}
-                </Badge>
-              </div>
-
-              {leave.reviewedAt && (
-                <div className="mt-3 space-y-1 border-t pt-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Reviewed at</span>
-                    <span>{formatDate(leave.reviewedAt)}</span>
-                  </div>
-                  {leave.reviewNote && (
-                    <div className="mt-2">
-                      <p className="text-sm text-muted-foreground">
-                        {leave.reviewNote}
+          ) : leave ? (
+            <>
+              <div className="space-y-6 py-2">
+                {/* Header: Employee Profile & Status */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="size-9">
+                        <AvatarFallback className="text-sm">
+                          {getInitials(
+                            leave.employee.firstName,
+                            leave.employee.lastName,
+                          )}
+                        </AvatarFallback>
+                      </Avatar>
+                    <div>
+                      <p className="text-sm font-semibold leading-none">
+                        {leave.employee.firstName} {leave.employee.lastName}
+                      </p>
+                      <p className="mt-1.5 text-xs text-muted-foreground">
+                        {leave.employee.department?.name ?? "No Dept"} • {leave.employee.employeeCode}
                       </p>
                     </div>
-                  )}
+                  </div>
+                  <Badge variant={getStatusVariant(leave.status)} className="shrink-0">
+                    {LEAVE_STATUS_LABELS[leave.status]}
+                  </Badge>
                 </div>
-              )}
+
+                {/* Main Leave Metrics */}
+                <div className="grid grid-cols-2 gap-4 rounded-lg border bg-card p-4 text-sm shadow-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Leave Type</p>
+                    <p className="font-medium">{leave.leaveType.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Duration</p>
+                    <p className="font-medium capitalize">
+                      {leave.requestedDays} day ({formatDuration(leave.duration)})
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs text-muted-foreground mb-1">Date Range</p>
+                    <p className="font-medium">
+                      {formatDate(leave.startDate)} – {formatDate(leave.endDate)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Reason provided by employee */}
+                <div>
+                  <p className="text-sm font-medium mb-1.5 text-muted-foreground">Reason for leave</p>
+                  <div className="rounded-md bg-muted/50 p-3 text-sm text-foreground whitespace-pre-wrap">
+                    {leave.reason?.trim() || <span className="italic text-muted-foreground">No reason provided.</span>}
+                  </div>
+                </div>
+
+                {/* Review Details (if already processed) */}
+                {leave.reviewedAt && (
+                  <div>
+                    <p className="text-sm font-medium mb-1.5 text-muted-foreground">
+                      Admin Review Note <span className="text-xs font-normal ml-1">({formatDate(leave.reviewedAt)})</span>
+                    </p>
+                    <div className="rounded-md bg-muted/50 p-3 text-sm text-foreground whitespace-pre-wrap">
+                      {leave.reviewNote?.trim() || <span className="italic text-muted-foreground">No note provided.</span>}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <hr className="h-px bg-border" />
+              <DialogFooter className="gap-2 -mt-2">
+                {leave.status === "PENDING" ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => setRejectDialogOpen(true)}
+                      className="w-full sm:w-auto"
+                    >
+                      <X className="mr-1.5 size-4" />
+                      Reject
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => setApproveDialogOpen(true)}
+                      className="w-full sm:w-auto"
+                    >
+                      <Check className="mr-1.5 size-4" />
+                      Approve
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => onOpenChange(false)}
+                    className="w-full sm:w-auto"
+                  >
+                    Close Window
+                  </Button>
+                )}
+              </DialogFooter>
+            </>
+          ) : (
+            <div className="py-10 text-center text-sm text-muted-foreground">
+              Leave request not found.
             </div>
-          </div>
-        ) : null}
-      </DialogContent>
-    </Dialog>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <ApproveLeaveDialog
+        open={approveDialogOpen}
+        onOpenChange={setApproveDialogOpen}
+        leaveId={leaveId}
+        leaveSummary={leaveSummary}
+      />
+
+      <RejectLeaveDialog
+        open={rejectDialogOpen}
+        onOpenChange={setRejectDialogOpen}
+        leaveId={leaveId}
+        leaveSummary={leaveSummary}
+      />
+    </>
   );
 }

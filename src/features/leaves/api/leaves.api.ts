@@ -5,6 +5,8 @@ import type {
   CreateLeaveRequestResponse,
   LeaveRequestDetailResponse,
   LeaveRequestListResponse,
+  LeavePreviewResponse,
+  MyLeaveBalanceResponse,
 } from "../types/leave.types";
 
 export async function createLeaveRequest(
@@ -15,6 +17,14 @@ export async function createLeaveRequest(
     payload,
   );
   return response.data;
+}
+
+export async function previewLeaveRequest(payload: CreateLeaveRequestPayload): Promise<LeavePreviewResponse> {
+  return (await api.post<LeavePreviewResponse>("/leaves/preview", payload)).data;
+}
+
+export async function getMyLeaveBalance(year: number): Promise<MyLeaveBalanceResponse> {
+  return (await api.get<MyLeaveBalanceResponse>("/leaves/me/balance", { params: { year } })).data;
 }
 
 export async function getMyLeaves(): Promise<LeaveRequestListResponse> {

@@ -49,10 +49,6 @@ interface LeaveRequestFiltersProps {
 export function LeaveRequestFilters({
   onFiltersChange,
 }: LeaveRequestFiltersProps) {
-  // ---------------------------------------------------------------------------
-  // Filter states
-  // ---------------------------------------------------------------------------
-
   const [fromDate, setFromDate] = useState(
     getFirstDayOfCurrentMonth(),
   );
@@ -79,9 +75,6 @@ export function LeaveRequestFilters({
     setLeaveTypeFilter,
   ] = useState("ALL");
 
-  // ---------------------------------------------------------------------------
-  // Employee dropdown
-  // ---------------------------------------------------------------------------
 
   const [
     employeeSearch,
@@ -99,9 +92,6 @@ export function LeaveRequestFilters({
   const scrollRef =
     useRef<HTMLDivElement>(null);
 
-  // ---------------------------------------------------------------------------
-  // Status items
-  // ---------------------------------------------------------------------------
 
   const statusItems = useMemo(
     () => [
@@ -125,13 +115,11 @@ export function LeaveRequestFilters({
         label: "Cancelled",
         value: "CANCELLED",
       },
+      { label: "Auto rejected", value: "AUTO_REJECTED" },
     ],
     [],
   );
 
-  // ---------------------------------------------------------------------------
-  // Departments
-  // ---------------------------------------------------------------------------
 
   const {
     data: departmentsResponse,
@@ -161,9 +149,6 @@ export function LeaveRequestFilters({
     [allDepartments],
   );
 
-  // ---------------------------------------------------------------------------
-  // Leave Types
-  // ---------------------------------------------------------------------------
 
   const {
     data: leaveTypesResponse,
@@ -193,9 +178,6 @@ export function LeaveRequestFilters({
     [allLeaveTypes],
   );
 
-  // ---------------------------------------------------------------------------
-  // Employees
-  // ---------------------------------------------------------------------------
 
   const {
     data: employeesPages,
@@ -215,10 +197,6 @@ export function LeaveRequestFilters({
       ) ?? [],
     [employeesPages],
   );
-
-  // ---------------------------------------------------------------------------
-  // Employee infinite scroll
-  // ---------------------------------------------------------------------------
 
   const handleScroll =
     useCallback(() => {
@@ -249,9 +227,6 @@ export function LeaveRequestFilters({
       fetchNextPage,
     ]);
 
-  // ---------------------------------------------------------------------------
-  // Close employee dropdown on outside click
-  // ---------------------------------------------------------------------------
 
   const handleOutsideClick =
     useCallback((event: MouseEvent) => {
@@ -279,9 +254,6 @@ export function LeaveRequestFilters({
     };
   }, [handleOutsideClick]);
 
-  // ---------------------------------------------------------------------------
-  // Employee handlers
-  // ---------------------------------------------------------------------------
 
   function handleEmployeeSelect(
     value: string,
@@ -297,9 +269,6 @@ export function LeaveRequestFilters({
     setIsEmployeeOpen(false);
   }
 
-  // ---------------------------------------------------------------------------
-  // Selected employee label
-  // ---------------------------------------------------------------------------
 
   const selectedEmployeeLabel =
     useMemo(() => {
@@ -323,10 +292,6 @@ export function LeaveRequestFilters({
       employeeFilter,
       allEmployees,
     ]);
-
-  // ---------------------------------------------------------------------------
-  // Emit filters
-  // ---------------------------------------------------------------------------
 
   useEffect(() => {
     onFiltersChange({
@@ -362,10 +327,6 @@ export function LeaveRequestFilters({
     leaveTypeFilter,
     onFiltersChange,
   ]);
-
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border p-4 md:flex-row md:items-end">
@@ -403,7 +364,6 @@ export function LeaveRequestFilters({
           type="date"
           value={toDate}
           min={fromDate}
-          max={getTodayDate()}
           onChange={(event) =>
             setToDate(
               event.target.value,
