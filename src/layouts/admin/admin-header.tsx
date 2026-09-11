@@ -1,6 +1,5 @@
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { NotificationBell } from "@/features/notifications/notification-bell";
 
 export function AdminHeader() {
   return (
@@ -16,7 +15,6 @@ export function AdminHeader() {
           Admin Console
         </p>
       </div>
-      <NotificationBell />
     </header>
   );
 }

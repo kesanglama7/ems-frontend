@@ -9,6 +9,7 @@ import { useAuthStore } from "@/stores/auth.store";
 
 import { logout } from "../api/auth.api";
 import { authKeys } from "../constants/auth.constants";
+import { unregisterCurrentPushDevice } from "@/features/push-notifications/push-notifications";
 
 export function useLogout() {
   const router = useRouter();
@@ -16,7 +17,10 @@ export function useLogout() {
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
   return useMutation({
-    mutationFn: logout,
+    mutationFn: async () => {
+      await unregisterCurrentPushDevice().catch(() => undefined);
+      return logout();
+    },
     onSuccess: () => {
       toast.success("Signed out successfully.");
     },

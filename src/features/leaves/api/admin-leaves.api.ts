@@ -119,3 +119,11 @@ export async function rejectLeave({
     );
     return response.data;
 }
+
+
+export async function getEmployeeLeaveBalance(
+    employeeId: string,
+    year: number,
+) {
+
+}

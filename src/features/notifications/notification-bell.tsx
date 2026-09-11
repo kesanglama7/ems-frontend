@@ -60,7 +60,7 @@ export function NotificationBell() {
           <div className="min-w-0">
             <h2 className="font-semibold">Notifications</h2>
             <p className="text-xs text-muted-foreground">
-              Updates about leave requests
+              Updates about requests and leave
             </p>
           </div>
 
@@ -97,7 +97,7 @@ export function NotificationBell() {
 
               <p className="text-sm font-medium">You’re all caught up</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                New leave updates will appear here.
+                New updates will appear here.
               </p>
             </div>
           ) : (

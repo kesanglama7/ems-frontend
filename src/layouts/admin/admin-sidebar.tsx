@@ -13,9 +13,9 @@ import {
   ChevronRight,
   FileText,
   LayoutDashboard,
+  MessageSquareWarning,
   Settings,
   Users,
-  WalletCards,
   type LucideIcon,
 } from "lucide-react";
 
@@ -94,6 +94,11 @@ const adminNavigation: NavItem[] = [
     title: "Documents",
     href: "/admin/documents",
     icon: FileText,
+  },
+  {
+    title: "Employee Requests",
+    href: "/admin/requests",
+    icon: MessageSquareWarning,
   },
   {
     title: "Leaves",

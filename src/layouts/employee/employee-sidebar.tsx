@@ -7,6 +7,7 @@ import {
     CalendarDays,
     FileText,
     LayoutDashboard,
+    MessageSquareWarning,
     UserRound,
     Users,
   type LucideIcon,
@@ -60,6 +61,11 @@ const employeeNavigation: NavItem[] = [
     title: "Documents",
     href: "/employee/documents",
     icon: FileText,
+  },
+  {
+    title: "Requests",
+    href: "/employee/requests",
+    icon: MessageSquareWarning,
   },
   {
     title: "Teams",
