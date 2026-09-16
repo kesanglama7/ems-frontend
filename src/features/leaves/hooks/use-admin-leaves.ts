@@ -20,7 +20,12 @@ export function useAdminLeaves(params?: AdminLeaveQueryParams) {
 }
 
 export function useAdminLeaveSummary(year: number) { return useQuery({ queryKey: leaveKeys.adminSummary(year), queryFn: () => getAdminLeaveSummary(year) }); }
-export function useAdminBalances(year: number) { return useQuery({ queryKey: leaveKeys.adminBalances(year), queryFn: () => getAdminBalances(year) }); }
+export function useAdminBalances(year: number, page = 1) {
+  return useQuery({
+    queryKey: [...leaveKeys.adminBalances(year), page],
+    queryFn: () => getAdminBalances(year, page),
+  });
+}
 
 function useAdminMutation<T>(mutationFn: (value: T) => Promise<unknown>, successMessage: string) {
   const queryClient = useQueryClient();

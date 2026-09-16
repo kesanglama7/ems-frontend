@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle } from "lucide-react";
+import { Info, LoaderCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldDescription,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,15 +32,13 @@ import {
 } from "@/components/ui/select";
 import { getTodayDate } from "@/lib/general";
 
-import {
-  useCreateLeaveRequest,
-  useLeavePreview,
-} from "../../hooks/use-my-leaves";
+import { useCreateLeaveRequest } from "../../hooks/use-my-leaves";
 import { useLeaveTypes } from "../../hooks/use-leave-types";
 import {
   createLeaveRequestSchema,
   type CreateLeaveRequestFormValues,
 } from "../../schemas/create-leave-request.schema";
+import { HelpTooltip } from "@/components/shared/help-tooltip";
 
 interface CreateLeaveDialogProps {
   open: boolean;
@@ -90,7 +89,6 @@ export function CreateLeaveDialog({
     handleSubmit,
     reset,
     setValue,
-    trigger,
     watch,
   } = form;
 
@@ -241,6 +239,27 @@ export function CreateLeaveDialog({
                       id={field.name}
                       type="date"
                       min={getTodayDate()}
+                      onChange={(event) => {
+                        const nextStartDate = event.target.value;
+                        const previousEndDate = getValues("endDate");
+
+                        field.onChange(event);
+
+                        // Follow the start date for a one-day request. Keep a
+                        // later end date if the employee chose a date range.
+                        if (
+                          nextStartDate &&
+                          (duration !== "FULL_DAY" ||
+                            !previousEndDate ||
+                            previousEndDate === field.value ||
+                            previousEndDate < nextStartDate)
+                        ) {
+                          setValue("endDate", nextStartDate, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }
+                      }}
                       aria-invalid={fieldState.invalid}
                     />
 
@@ -252,33 +271,39 @@ export function CreateLeaveDialog({
                   </Field>
                 )}
               />
+                <Controller
+                  name="endDate"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor={field.name}>
+                        End Date
+                        <HelpTooltip
+                          icon={Info}
+                          description="Defaults to the start date. Choose a later date for multiple days."
+                        />
+                      </FieldLabel>
 
-              <Controller
-                name="endDate"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>
-                      End Date
-                    </FieldLabel>
-
-                    <Input
-                      {...field}
-                      id={field.name}
-                      type="date"
-                      min={startDate || getTodayDate()}
-                      disabled={duration !== "FULL_DAY"}
-                      aria-invalid={fieldState.invalid}
-                    />
-
-                    {fieldState.invalid && (
-                      <FieldError
-                        errors={[fieldState.error]}
+                      <Input
+                        {...field}
+                        id={field.name}
+                        type="date"
+                        min={startDate || getTodayDate()}
+                        disabled={duration !== "FULL_DAY"}
+                        onChange={(event) => {
+                          // Clearing the date returns to a one-day request.
+                          field.onChange(event.target.value || startDate);
+                        }}
+                        aria-invalid={fieldState.invalid}
                       />
-                    )}
-                  </Field>
-                )}
-              />
+                      {fieldState.invalid && (
+                        <FieldError
+                          errors={[fieldState.error]}
+                        />
+                      )}
+                    </Field>
+                  )}
+                />
             </div>
 
             <Controller

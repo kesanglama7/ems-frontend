@@ -1,13 +1,12 @@
 "use client";
 
 import { useDeferredValue, useState } from "react";
-import { Columns3, Inbox, List, Plus, Search } from "lucide-react";
+import { Columns3, Inbox, List, Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import { REQUEST_CATEGORIES, REQUEST_PRIORITIES, REQUEST_STATUSES } from "../constants/employee-request.constants";
 import { useAdminRequestSummary, useRequests } from "../hooks/use-employee-requests";
 import type { RequestCategory, RequestPriority, RequestQuery, RequestStatus } from "../types/employee-request.types";
@@ -28,6 +27,7 @@ function Filters({
   status,
   setStatus,
   showStatus,
+  onClear,
 }: {
   search: string;
   setSearch: (value: string) => void;
@@ -38,37 +38,66 @@ function Filters({
   status: string;
   setStatus: (value: string) => void;
   showStatus: boolean;
+  onClear: () => void;
 }) {
+  const categoryLabel = category === "ALL" ? "All categories" : REQUEST_CATEGORIES.find((item) => item.value === category)?.label ?? category;
+  const statusLabel = status === "ALL" ? "All statuses" : REQUEST_STATUSES.find((item) => item.value === status)?.label ?? status;
+  const priorityLabel = priority === "ALL" ? "All priorities" : REQUEST_PRIORITIES.find((item) => item.value === priority)?.label ?? priority;
+  const hasFilters = Boolean(search.trim() || category !== "ALL" || priority !== "ALL" || (showStatus && status !== "ALL"));
+
   return (
-    <Card>
-      <CardContent className={cn("grid gap-3 p-4", showStatus ? "md:grid-cols-[minmax(220px,1fr)_repeat(3,180px)]" : "md:grid-cols-[minmax(220px,1fr)_repeat(2,180px)]")}>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input className="pl-9" placeholder="Search request or employee…" value={search} onChange={(event) => setSearch(event.target.value)} />
+    <Card className="shadow-none pt-0">
+      <CardContent >
+        <div className="flex justify-end items-end mt-4">
+          {hasFilters && (
+            <Button type="button" variant="ghost" size="sm" className="shrink-0 text-muted-foreground" onClick={onClear}>
+              <X className="size-4" />Clear filters
+            </Button>
+          )}
         </div>
-        <Select value={category} onValueChange={(value) => setCategory(value ?? "ALL")}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All categories</SelectItem>
-            {REQUEST_CATEGORIES.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        {showStatus && (
-          <Select value={status} onValueChange={(value) => setStatus(value ?? "ALL")}>
-            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All statuses</SelectItem>
-              {REQUEST_STATUSES.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        )}
-        <Select value={priority} onValueChange={(value) => setPriority(value ?? "ALL")}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All priorities</SelectItem>
-            {REQUEST_PRIORITIES.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <div className="grid gap-4 lg:grid-cols-[minmax(240px,1.5fr)_minmax(0,2fr)] lg:items-end">
+          <div className="space-y-1.5">
+            <label htmlFor="request-search" className="text-xs font-medium text-muted-foreground">Search</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input id="request-search" className="h-10 pl-9" placeholder="Search requests…" value={search} onChange={(event) => setSearch(event.target.value)} />
+            </div>
+          </div>
+          <div className={`grid gap-3 sm:grid-cols-2 ${showStatus ? "xl:grid-cols-3" : ""}`}>
+            <div className="min-w-0 space-y-1.5">
+              <label htmlFor="request-category" className="text-xs font-medium text-muted-foreground">Category</label>
+              <Select value={category} onValueChange={(value) => setCategory(value ?? "ALL")}>
+                <SelectTrigger id="request-category" className="h-10 w-full min-w-0"><SelectValue>{categoryLabel}</SelectValue></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All categories</SelectItem>
+                  {REQUEST_CATEGORIES.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            {showStatus && (
+              <div className="min-w-0 space-y-1.5">
+                <label htmlFor="request-status" className="text-xs font-medium text-muted-foreground">Status</label>
+                <Select value={status} onValueChange={(value) => setStatus(value ?? "ALL")}>
+                  <SelectTrigger id="request-status" className="h-10 w-full min-w-0"><SelectValue>{statusLabel}</SelectValue></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">All statuses</SelectItem>
+                    {REQUEST_STATUSES.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="min-w-0 space-y-1.5">
+              <label htmlFor="request-priority" className="text-xs font-medium text-muted-foreground">Priority</label>
+              <Select value={priority} onValueChange={(value) => setPriority(value ?? "ALL")}>
+                <SelectTrigger id="request-priority" className="h-10 w-full min-w-0"><SelectValue>{priorityLabel}</SelectValue></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All priorities</SelectItem>
+                  {REQUEST_PRIORITIES.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
@@ -187,6 +216,7 @@ function AdminRequestsPage() {
         status={status}
         setStatus={(value) => changeFilter(setStatus, value)}
         showStatus={view === "table"}
+        onClear={() => { setSearch(""); setCategory("ALL"); setPriority("ALL"); setStatus("ALL"); setPage(1); }}
       />
 
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -253,6 +283,7 @@ function EmployeeRequestsPage() {
         status={status}
         setStatus={(value) => changeFilter(setStatus, value)}
         showStatus
+        onClear={() => { setSearch(""); setCategory("ALL"); setPriority("ALL"); setStatus("ALL"); setPage(1); }}
       />
       {query.isPending ? <Skeleton className="h-96 rounded-xl" /> : requests.length ? <RequestTable requests={requests} admin={false} onOpen={setSelectedId} /> : <EmptyRequests admin={false} />}
       <Pagination page={page} setPage={setPage} pagination={query.data?.pagination} />

@@ -18,6 +18,7 @@ import {
 import { useMyLeaves, useCancelLeave } from "../../hooks/use-my-leaves";
 import { LEAVE_STATUS_LABELS } from "../../constants/leave.constants";
 import type { LeaveStatus } from "../../types/leave.types";
+import { StatusBadge } from "@/components/shared/status-badge";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
@@ -27,20 +28,6 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function getStatusVariant(status: LeaveStatus) {
-  switch (status) {
-    case "PENDING":
-      return "outline";
-    case "APPROVED":
-      return "default";
-    case "REJECTED":
-      return "destructive";
-    case "CANCELLED":
-      return "secondary";
-    case "AUTO_REJECTED":
-      return "destructive";
-  }
-}
 
 function LeaveHistorySkeleton() {
   return (
@@ -116,9 +103,8 @@ export function MyLeaveHistory() {
                 <TableCell>{formatDate(leave.endDate)}</TableCell>
                 <TableCell>{leave.requestedDays} · {leave.duration === "FULL_DAY" ? "Full" : leave.duration === "FIRST_HALF" ? "First half" : "Second half"}</TableCell>
                 <TableCell>
-                  <Badge variant={getStatusVariant(leave.status)}>
-                    {LEAVE_STATUS_LABELS[leave.status]}
-                  </Badge>
+
+                  <StatusBadge status={leave.status}  labels={LEAVE_STATUS_LABELS} />
                 </TableCell>
                 <TableCell className="max-w-sm">
                   <p className="text-muted-foreground truncate">
@@ -160,9 +146,7 @@ export function MyLeaveHistory() {
                   {formatDate(leave.startDate)} - {formatDate(leave.endDate)}
                 </p>
               </div>
-              <Badge variant={getStatusVariant(leave.status)}>
-                {LEAVE_STATUS_LABELS[leave.status]}
-              </Badge>
+              <StatusBadge status={leave.status} labels={LEAVE_STATUS_LABELS} />
             </div>
             <p className="text-muted-foreground mt-2 line-clamp-3 text-sm">
               {leave.reason || "No reason provided."}

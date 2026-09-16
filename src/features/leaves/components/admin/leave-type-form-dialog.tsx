@@ -277,14 +277,14 @@ export function LeaveTypeFormDialog({
                       <Switch checked={field.value} onCheckedChange={field.onChange}/>
                     </Field>} 
                 />
-                <Controller 
+                {/* <Controller 
                 name="isEmployeeRequestable" 
                 control={form.control} render={({ field }) =>
                   <Field orientation="horizontal">
                     <FieldLabel>Employee request</FieldLabel>
                     <Switch checked={field.value} onCheckedChange={field.onChange}/>
                   </Field>} 
-                />
+                /> */}
                 <Controller 
                 name="isPaid" 
                 control={form.control} 

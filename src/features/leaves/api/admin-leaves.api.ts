@@ -33,13 +33,15 @@ export async function getAdminLeaveSummary(
     ).data;
 }
 export async function getAdminBalances(
-    year: number,
+  year: number,
+  page = 1,
 ): Promise<AdminBalancesResponse> {
-    return (
-        await api.get<AdminBalancesResponse>("/admin/leaves/balances", {
-            params: { year },
-        })
-    ).data;
+  const response = await api.get<AdminBalancesResponse>(
+    "/admin/leaves/balances",
+    { params: { year, page } },
+  );
+
+  return response.data;
 }
 export async function initializeBalances(
     year: number,

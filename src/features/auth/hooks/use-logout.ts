@@ -30,6 +30,7 @@ export function useLogout() {
     onSettled: () => {
       clearAuth();
       queryClient.removeQueries({ queryKey: authKeys.all });
+      queryClient.removeQueries({ queryKey: ["notifications"] });
       router.replace("/login");
     },
   });

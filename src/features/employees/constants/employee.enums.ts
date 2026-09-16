@@ -8,3 +8,8 @@ export const workModeItems = [
     value: "REMOTE",
   },
 ] as const;
+
+export const WORK_MODE_LABELS: Record<typeof workModeItems[number]["value"], string> = {
+  ON_FIELD: "On Field",
+  REMOTE: "Remote",
+};

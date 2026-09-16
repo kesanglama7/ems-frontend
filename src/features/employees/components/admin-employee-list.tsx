@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -54,6 +53,9 @@ import { EmployeeListItem, EmployeeListQuery } from "@/features/employees/types/
 import { useEmployees } from "@/features/employees/hooks/use-employees";
 import Link from "next/link";
 import { EmployeeStatusMenuItem } from "./employee-status-menu-item";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { getInitials } from "@/lib/name-shorten";
+import { formatJoiningDate } from "@/lib/general";
 
 const PAGE_SIZE = 20;
 
@@ -95,74 +97,7 @@ const statusItems = [
   },
 ];
 
-function getInitials(
-  firstName: string,
-  lastName: string,
-) {
-  return `${firstName[0] ?? ""}${lastName[0] ?? ""}`
-    .toUpperCase();
-}
 
-function formatJoiningDate(
-  value: string | null,
-) {
-  if (!value) {
-    return "—";
-  }
-
-  const [year, month, day] = value
-    .slice(0, 10)
-    .split("-")
-    .map(Number);
-
-  return new Intl.DateTimeFormat("en", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(
-    new Date(year, month - 1, day),
-  );
-}
-
-function EmployeeStatusBadge({
-  status,
-}: {
-  status: UserStatus;
-}) {
-  return (
-    <Badge
-      variant={
-        status === "ACTIVE"
-          ? "default"
-          : "secondary"
-      }
-    >
-      {status === "ACTIVE"
-        ? "Active"
-        : "Inactive"}
-    </Badge>
-  );
-}
-
-function WorkModeStatus({
-  workMode,
-}: {
-  workMode: UserWorkMode;
-}) {
-  return (
-    <Badge
-      variant={
-        workMode === "ON_FIELD"
-          ? "default"
-          : "secondary"
-      }
-    >
-      {workMode === "ON_FIELD"
-        ? "On Field"
-        : "Remote"}
-    </Badge>
-  );
-}
 
 function EmployeeTableSkeleton() {
   return (
@@ -248,11 +183,7 @@ function EmployeeDesktopTable({
               </TableCell>
 
               <TableCell>
-                <EmployeeStatusBadge
-                  status={
-                    employee.user.status
-                  }
-                />
+                <StatusBadge status={employee.user.status} />
               </TableCell>
 
               <TableCell>
@@ -261,11 +192,7 @@ function EmployeeDesktopTable({
                 )}
               </TableCell>
               <TableCell>
-                <WorkModeStatus
-                  workMode={
-                    employee.workMode
-                  }
-                />
+                <StatusBadge status={employee.workMode} />
               </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
@@ -390,11 +317,7 @@ function EmployeeMobileList({
                     </p>
                   </div>
                   <div>
-                    <EmployeeStatusBadge
-                      status={
-                        employee.user.status
-                      }
-                    />
+                    <StatusBadge status={employee.user.status} />
                   </div>
                 </div>
 
@@ -434,11 +357,7 @@ function EmployeeMobileList({
                     <p className="text-muted-foreground text-xs">
                       Work mode
                     </p>
-                    <WorkModeStatus
-                      workMode={
-                        employee.workMode
-                      }
-                    />
+                    <StatusBadge status={employee.workMode} />
                   </div>
                 </div>
               </div>

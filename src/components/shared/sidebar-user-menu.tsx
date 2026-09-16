@@ -6,6 +6,7 @@ import {
   ChevronsUpDown,
   KeyRound,
   LogOut,
+  Settings,
   UserRound,
 } from "lucide-react";
 
@@ -33,6 +34,7 @@ import { ChangePasswordDialog } from "@/features/auth/components/change-password
 import { useLogout } from "@/features/auth/hooks/use-logout";
 import type { AuthUser } from "@/features/auth/types/auth.types";
 import { useMyEmployeeProfile } from "@/features/employees/hooks/use-my-employee-profile";
+import { UserRole } from "@/types/user.types";
 
 interface SidebarUserMenuProps {
   user: AuthUser;
@@ -72,6 +74,26 @@ export function SidebarUserMenu({
 
       router.push(
         "/employee/profile",
+      );
+    };
+
+  const handleSettingsNavigation =
+    (role: UserRole) => {
+      if(!role) return;
+
+      if (isMobile) {
+        setOpenMobile(false);
+      }
+
+      if (role === "ADMIN") {
+        router.push(
+          "/admin/settings",
+        );
+        return;
+      }
+
+      router.push(
+        "/employee/settings",
       );
     };
 
@@ -184,6 +206,18 @@ export function SidebarUserMenu({
                   <KeyRound />
                   Change password
                 </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleSettingsNavigation(
+                      user.role,
+                    )
+                  }
+                  >
+                  <Settings />
+                  Settings
+                </DropdownMenuItem>
+                
               </DropdownMenuGroup>
 
               <DropdownMenuSeparator />

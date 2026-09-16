@@ -21,6 +21,7 @@ import { useAdminLeaves} from "../../hooks/use-admin-leaves";
 import { LEAVE_STATUS_LABELS } from "../../constants/leave.constants";
 import type { AdminLeaveQueryParams, LeaveStatus } from "../../types/leave.types";
 import { LeaveRequestDetailDialog } from "./leave-request-detail-dialog";
+import { StatusBadge } from "@/components/shared/status-badge";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
@@ -30,20 +31,6 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function getStatusVariant(status: LeaveStatus) {
-  switch (status) {
-    case "PENDING":
-      return "outline" as const;
-    case "APPROVED":
-      return "default" as const;
-    case "REJECTED":
-      return "destructive" as const;
-    case "CANCELLED":
-      return "secondary" as const;
-    case "AUTO_REJECTED":
-      return "destructive" as const;
-  }
-}
 
 interface LeaveRequestListProps {
   filters: AdminLeaveQueryParams;
@@ -56,16 +43,6 @@ export function LeaveRequestList({ filters }: LeaveRequestListProps) {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedLeaveId, setSelectedLeaveId] = useState<string>("");
 
-  function getLeaveSummary(leave: (typeof leaves)[number]) {
-    const employeeName = `${leave.employee.firstName} ${leave.employee.lastName}`;
-    return {
-      employeeName,
-      leaveType: leave.leaveType.name,
-      startDate: formatDate(leave.startDate),
-      endDate: formatDate(leave.endDate),
-    };
-  }
-
   function handleViewDetail(leaveId: string) {
     setSelectedLeaveId(leaveId);
     setDetailDialogOpen(true);
@@ -73,9 +50,6 @@ export function LeaveRequestList({ filters }: LeaveRequestListProps) {
 
   // Find the selected leave for summary info
   const selectedLeave = leaves.find((l) => l.id === selectedLeaveId);
-  const leaveSummary = selectedLeave
-    ? getLeaveSummary(selectedLeave)
-    : { employeeName: "", leaveType: "", startDate: "", endDate: "" };
 
   return (
     <>
@@ -149,9 +123,7 @@ export function LeaveRequestList({ filters }: LeaveRequestListProps) {
                   <TableCell>{formatDate(leave.endDate)}</TableCell>
                   <TableCell>{leave.requestedDays} ({leave.duration === "FULL_DAY" ? "full" : leave.duration === "FIRST_HALF" ? "first half" : "second half"})</TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(leave.status)}>
-                      {LEAVE_STATUS_LABELS[leave.status]}
-                    </Badge>
+                    <StatusBadge status={leave.status} labels={LEAVE_STATUS_LABELS} />
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">

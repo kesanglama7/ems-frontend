@@ -33,3 +33,24 @@ export function formatMinutes(minutes: number | null): string {
     ? `${hours}h ${mins}m`
     : `${mins}m`;
 }
+
+export function formatJoiningDate(
+  value: string | null,
+) {
+  if (!value) {
+    return "—";
+  }
+
+  const [year, month, day] = value
+    .slice(0, 10)
+    .split("-")
+    .map(Number);
+
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(
+    new Date(year, month - 1, day),
+  );
+}

@@ -294,10 +294,10 @@ export function LeaveTypeList() {
                       Description
                     </TableHead>
 
+                    <TableHead>Annual Entitlement</TableHead>
                     <TableHead>
                       Status
                     </TableHead>
-                    <TableHead>Allowance</TableHead>
 
                     <TableHead className="w-12">
                       <span className="sr-only">
@@ -336,6 +336,7 @@ export function LeaveTypeList() {
                           </p>
                         </TableCell>
 
+                        <TableCell>{leaveType.hasLimitedBalance ? `${leaveType.yearlyAllowance} days` : "Unlimited"}</TableCell>
                         <TableCell>
                           <Switch
                             checked={leaveType.isActive}
@@ -348,7 +349,6 @@ export function LeaveTypeList() {
                             disabled={toggleMutation.isPending || leaveType.isSystem}
                           />
                         </TableCell>
-                        <TableCell>{leaveType.hasLimitedBalance ? `${leaveType.yearlyAllowance} days` : "Unlimited"}</TableCell>
 
                         <TableCell>
                           <Button

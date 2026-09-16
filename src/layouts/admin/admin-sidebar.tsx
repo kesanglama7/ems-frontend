@@ -7,6 +7,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Bell,
   Building2,
   CalendarCheck,
   CalendarDays,
@@ -14,6 +15,7 @@ import {
   FileText,
   LayoutDashboard,
   MessageSquareWarning,
+  Megaphone,
   Settings,
   Users,
   type LucideIcon,
@@ -125,9 +127,19 @@ const adminNavigation: NavItem[] = [
     icon: Building2,
   },
   {
+    title: "Announcements",
+    href: "/admin/announcements",
+    icon: Megaphone,
+  },
+  {
     title: "Office Settings",
-    href: "/admin/settings",
+    href: "/admin/office-settings",
     icon: Settings,
+  },
+  {
+    title: "Notifications",
+    href: "/admin/notifications",
+    icon: Bell,
   },
 ];
 

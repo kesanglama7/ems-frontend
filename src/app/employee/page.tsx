@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuthStore } from "@/stores/auth.store";
 import { LiveClock } from "@/features/attendance/components/employee/live-clock";
 import { CheckInControl } from "@/features/attendance/components/employee/check-in-control";
 import { useOfficeSettings } from "@/features/office-settings/hooks/use-office-settings";
@@ -8,42 +7,21 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, CalendarDays, Briefcase, AlertCircle } from "lucide-react";
-import { useMyEmployeeProfile } from "@/features/employees/hooks/use-my-employee-profile";
+import { EmployeeDashboardNotices } from "@/features/announcements/components/employee/dashboard-notices";
 
 const DAY_MAP: Record<string, number> = {
   SUNDAY: 0, MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3, THURSDAY: 4, FRIDAY: 5, SATURDAY: 6,
 };
 
 export default function EmployeeDashboardPage() {
-    const {
-    data: profile,
-  } = useMyEmployeeProfile();
   const { data: settings, isLoading } = useOfficeSettings();
-
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   const workingDayNumbers = settings?.workingDays.map(day => DAY_MAP[day]) || [1,2,3,4,5];
   const isOffDay = (date: Date) => !workingDayNumbers.includes(date.getDay());
 
   return (
     <main className="flex flex-1 flex-col gap-6  max-w-8xl mx-auto w-full">
-      
-      {/* Welcome Banner */}
-      <div className="flex flex-col justify-between gap-4 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 md:p-8 border border-primary/10 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-            {greeting}, {profile?.firstName || "Team Member"}! 👋
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            {settings?.officeName ? `Welcome to ${settings.officeName} portal.` : "Here's your attendance overview for today."}
-          </p>
-        </div>
-      </div>
-
       <div className="grid gap-6 md:grid-cols-12">
-        
-        {/* Left Column: Schedule & Calendar */}
         <div className="space-y-6 md:col-span-7 lg:col-span-8">
           <Card>
             <CardHeader>
@@ -130,6 +108,7 @@ export default function EmployeeDashboardPage() {
           </Card>
         </div>
       </div>
+      <EmployeeDashboardNotices />
     </main>
   );
 }

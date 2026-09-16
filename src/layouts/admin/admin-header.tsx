@@ -1,3 +1,4 @@
+import { NotificationBell } from "@/features/notifications/notification-bell";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -15,6 +16,7 @@ export function AdminHeader() {
           Admin Console
         </p>
       </div>
+      <NotificationBell />
     </header>
   );
 }

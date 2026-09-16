@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+    Bell,
     CalendarCheck,
     CalendarDays,
     FileText,
     LayoutDashboard,
     MessageSquareWarning,
+    Megaphone,
     UserRound,
     Users,
   type LucideIcon,
@@ -68,9 +70,19 @@ const employeeNavigation: NavItem[] = [
     icon: MessageSquareWarning,
   },
   {
+    title: "Announcements",
+    href: "/employee/announcements",
+    icon: Megaphone,
+  },
+  {
     title: "Teams",
     href: "/employee/teams",
     icon: Users,
+  },
+  {
+    title: "Notifications",
+    href: "/employee/notifications",
+    icon: Bell,
   },
 ];
 

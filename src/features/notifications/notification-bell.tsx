@@ -1,157 +1,26 @@
 "use client";
-
-import { Bell, CheckCheck, LoaderCircle } from "lucide-react";
-
+import { useState } from "react";
+import Link from "next/link";
+import { ArrowUpRight, Bell, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  useMarkAllNotificationsRead,
-  useMarkNotificationRead,
-  useNotifications,
-  useUnreadCount,
-} from "./hooks";
-
+import { Popover, PopoverContent, PopoverTitle, PopoverDescription, PopoverTrigger } from "@/components/ui/popover";
+import { useAuthStore } from "@/stores/auth.store";
+import { useMarkAllNotificationsRead, useUnreadCount } from "./hooks";
+import { NotificationList } from "./notification-list";
 export function NotificationBell() {
-  const notifications = useNotifications();
-  const unreadCount = useUnreadCount();
-  const markAsRead = useMarkNotificationRead();
-  const markAllAsRead = useMarkAllNotificationsRead();
-
-  const unread = unreadCount.data?.data.unreadCount ?? 0;
-  const items = notifications.data?.data ?? [];
-
-  return (
-    <Popover>
-      <PopoverTrigger
-       render={
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="relative ml-auto rounded-full"
-          aria-label={
-            unread > 0
-              ? `${unread} unread notifications`
-              : "Open notifications"
-          }
-        >
-          <Bell className="size-5" />
-
-          {unread > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold leading-4 text-destructive-foreground ring-2 ring-background">
-              {unread > 99 ? "99+" : unread}
-            </span>
-          )}
-        </Button>
-       }
-       />
-
-      <PopoverContent
-        align="end"
-        sideOffset={8}
-        className="w-[calc(100vw-2rem)] max-w-sm overflow-hidden p-0"
-      >
-        <header className="flex items-center justify-between gap-3 border-b px-4 py-3">
-          <div className="min-w-0">
-            <h2 className="font-semibold">Notifications</h2>
-            <p className="text-xs text-muted-foreground">
-              Updates about requests and leave
-            </p>
-          </div>
-
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="shrink-0 gap-1.5"
-            disabled={unread === 0 || markAllAsRead.isPending}
-            onClick={() => markAllAsRead.mutate()}
-          >
-            {markAllAsRead.isPending ? (
-              <LoaderCircle className="size-4 animate-spin" />
-            ) : (
-              <CheckCheck className="size-4" />
-            )}
-            Mark all read
-          </Button>
-        </header>
-
-        <ScrollArea className="h-auto max-h-[max(24rem,70vh)] -mt-4">
-          {notifications.isPending ? (
-            <div className="grid min-h-40 place-items-center">
-              <LoaderCircle
-                className="size-5 animate-spin text-muted-foreground"
-                aria-label="Loading notifications"
-              />
-            </div>
-          ) : items.length === 0 ? (
-            <div className="flex min-h-40 flex-col items-center justify-center px-6 text-center">
-              <div className="mb-3 rounded-full bg-muted p-3">
-                <Bell className="size-5 text-muted-foreground" />
-              </div>
-
-              <p className="text-sm font-medium">You’re all caught up</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                New updates will appear here.
-              </p>
-            </div>
-          ) : (
-            <div>
-              {items.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={[
-                    "relative w-full border-b px-4 py-3 text-left",
-                    "transition-colors last:border-b-0 hover:bg-muted/60",
-                    "focus-visible:outline-none focus-visible:ring-2",
-                    "focus-visible:ring-inset focus-visible:ring-ring",
-                    item.isRead ? "" : "bg-primary/[0.06]",
-                  ].join(" ")}
-                  onClick={() => {
-                    if (!item.isRead && !markAsRead.isPending) {
-                      markAsRead.mutate(item.id);
-                    }
-                  }}
-                >
-                  {!item.isRead && (
-                    <span
-                      className="absolute left-1.5 top-5 size-1.5 rounded-full bg-primary"
-                      aria-hidden="true"
-                    />
-                  )}
-
-                  <div className="space-y-1">
-                    <p
-                      className={`text-sm ${
-                        item.isRead ? "font-medium" : "font-semibold"
-                      }`}
-                    >
-                      {item.title}
-                    </p>
-
-                    <p className="line-clamp-2 text-xs leading-5 text-muted-foreground">
-                      {item.message}
-                    </p>
-
-                    <time
-                      dateTime={item.createdAt}
-                      className="block text-[11px] text-muted-foreground"
-                    >
-                      {new Date(item.createdAt).toLocaleString()}
-                    </time>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-      </PopoverContent>
-    </Popover>
-  );
+  const [open, setOpen] = useState(false);
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const role = useAuthStore((s) => s.user?.role);
+  const count = useUnreadCount();
+  const markAll = useMarkAllNotificationsRead();
+  const unread = count.data?.data.unreadCount ?? 0;
+  return <Popover open={open} onOpenChange={setOpen}>
+    <PopoverTrigger render={<Button variant="ghost" size="icon" className="relative ml-auto rounded-lg" aria-label={unread ? `Notifications, ${unread} unread` : "Open notifications"}><Bell className="size-5" />{unread > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground ring-2 ring-background">{unread > 99 ? "99+" : unread}</span>}</Button>} />
+    <PopoverContent align="end" sideOffset={12} className="w-[calc(100vw-2rem)] max-w-[420px] gap-0 overflow-hidden rounded-xl p-0 shadow-xl">
+      <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-3"><div><PopoverTitle className="text-base font-semibold">Notifications</PopoverTitle><PopoverDescription className="mt-1 text-xs">{unread ? `${unread} unread workplace updates` : "Your latest workplace updates"}</PopoverDescription></div><Button variant="ghost" size="icon-sm" title="Mark all as read" aria-label="Mark all notifications as read" disabled={!unread || markAll.isPending} onClick={() => markAll.mutate()}><CheckCheck /></Button></div>
+      <div className="flex gap-1 border-b px-5 pb-3" aria-label="Filter notifications"><Button variant={unreadOnly ? "ghost" : "secondary"} size="sm" aria-pressed={!unreadOnly} onClick={() => setUnreadOnly(false)}>All</Button><Button variant={unreadOnly ? "secondary" : "ghost"} size="sm" aria-pressed={unreadOnly} onClick={() => setUnreadOnly(true)}>Unread{unread > 0 && <span className="ml-1 text-xs text-muted-foreground">{unread}</span>}</Button></div>
+      <div className="max-h-[min(420px,55dvh)] overflow-y-auto overscroll-contain"><NotificationList compact active={open} filters={{ unread: unreadOnly ? true : undefined }} onNavigate={() => setOpen(false)} /></div>
+      <div className="flex items-center justify-between border-t bg-muted/20 px-5 py-3"><span className="text-[11px] text-muted-foreground">Updates kept for 7 days</span><Link href={role === "ADMIN" ? "/admin/notifications" : "/employee/notifications"} onClick={() => setOpen(false)} className="inline-flex items-center gap-1 rounded-sm text-xs font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring">View all<ArrowUpRight className="size-3.5" /></Link></div>
+    </PopoverContent>
+  </Popover>;
 }

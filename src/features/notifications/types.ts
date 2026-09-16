@@ -1,3 +1,20 @@
-export type NotificationType = "LEAVE_REQUESTED" | "LEAVE_APPROVED" | "LEAVE_REJECTED" | "LEAVE_AUTO_REJECTED" | "LEAVE_CANCELLED" | "LEAVE_REMINDER" | "LEAVE_CREATED_BY_ADMIN" | "EMPLOYEE_REQUEST_CREATED" | "EMPLOYEE_REQUEST_STATUS_CHANGED" | "EMPLOYEE_REQUEST_ASSIGNED";
-export interface Notification { id: string; type: NotificationType; title: string; message: string; isRead: boolean; readAt: string | null; leaveRequestId: string | null; employeeRequestId?: string | null; createdAt: string }
-export interface NotificationsResponse { success: boolean; data: Notification[]; pagination: { page: number; limit: number; total: number } }
+export type NotificationCategory = "LEAVE" | "REQUEST" | "DOCUMENT" | "ATTENDANCE" | "ANNOUNCEMENT";
+export type NotificationEntityType = "LEAVE_REQUEST" | "EMPLOYEE_REQUEST" | "DOCUMENT" | "ATTENDANCE" | "LEAVE_BALANCE" | "ANNOUNCEMENT";
+export interface Notification {
+  id: string;
+  type: string;
+  category: NotificationCategory;
+  entityType: NotificationEntityType;
+  entityId: string;
+  title: string;
+  message: string;
+  readAt: string | null;
+  createdAt: string;
+  expiresAt: string;
+}
+export interface NotificationFilters { category?: NotificationCategory; unread?: boolean }
+export interface NotificationsResponse {
+  success: boolean;
+  data: Notification[];
+  pagination: { hasMore: boolean; nextCursor: string | null };
+}

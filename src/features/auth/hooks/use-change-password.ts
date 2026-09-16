@@ -20,6 +20,7 @@ export function useChangePassword() {
     onSuccess: (response) => {
       clearAuth();
       queryClient.removeQueries({ queryKey: authKeys.all });
+      queryClient.removeQueries({ queryKey: ["notifications"] });
       toast.success(response.message ?? "Password changed successfully. Please sign in again.");
       router.replace("/login");
     },

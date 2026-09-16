@@ -8,6 +8,7 @@ import { useAuthStore } from "@/stores/auth.store";
 
 import { EmployeeHeader } from "./employee-header";
 import { EmployeeSidebar } from "./employee-sidebar";
+import { LoginAnnouncementsDialog } from "@/features/announcements/components/employee/login-announcements-dialog";
 
 interface EmployeeShellProps {
   children: React.ReactNode;
@@ -34,6 +35,7 @@ export function EmployeeShell({
         <div className="flex flex-1 flex-col p-4 md:p-6">
           {children}
         </div>
+        <LoginAnnouncementsDialog key={user.id} />
       </SidebarInset>
     </SidebarProvider>
   );

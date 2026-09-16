@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,17 +23,18 @@ function LoginLoadingState() {
 export function LoginPageContent() {
   const router = useRouter();
   const { data: user, isLoading, isSuccess } = useMe();
+  const redirected = useRef(false);
 
   useEffect(() => {
-    if (!isSuccess || !user) {
+    if (!isSuccess || !user || redirected.current) {
       return;
     }
 
-    router.replace(
-      user.role === "ADMIN"
-        ? "/admin"
-        : "/employee",
-    );
+    redirected.current = true;
+    const openNotifications = sessionStorage.getItem("ems-open-notifications-after-login") === "true";
+    sessionStorage.removeItem("ems-open-notifications-after-login");
+    const home = user.role === "ADMIN" ? "/admin" : "/employee";
+    router.replace(openNotifications ? `${home}/notifications` : home);
   }, [isSuccess, router, user]);
 
   if (isLoading || isSuccess) {
