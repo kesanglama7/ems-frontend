@@ -1,5 +1,7 @@
 "use client";
 
+import { RequestAttachments } from "@/features/office/request-attachments";
+import { FulfillResourceButton } from "@/features/office/resources";
 import { useState } from "react";
 import { Ban, CheckCircle2, CircleDot, Clock3, LoaderCircle, LockKeyhole, UserRoundCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -111,7 +113,7 @@ export function RequestDetailDialog({
     <>
     <Sheet open={Boolean(id)} onOpenChange={onOpenChange}>
       <SheetContent className="w-full gap-0 sm:max-w-2xl">
-        {query.isPending || !request ? (
+        {query.isError ? <div className="p-6"><p>Could not load this request.</p><Button onClick={()=>void query.refetch()}>Try again</Button></div> : query.isPending || !request ? (
           <div className="space-y-4 p-6">
             <Skeleton className="h-7 w-2/3" />
             <Skeleton className="h-24 w-full" />
@@ -146,11 +148,11 @@ export function RequestDetailDialog({
                 )}
 
                 <section>
-                  <h3 className="text-sm font-semibold">Request details</h3>
+                  <RequestAttachments id={request.id} />{request.resource && <div className="my-4 rounded-lg border p-4"><p>Resource: {request.resource.name} · Quantity: {request.resourceQuantity ?? 1}</p>{admin && ["OPEN","IN_PROGRESS"].includes(request.status) && <FulfillResourceButton request={request}/>}</div>}<h3 className="mt-6 text-sm font-semibold">Request details</h3>
                   <div className="mt-3 grid gap-3 rounded-xl border p-4 sm:grid-cols-2">
                     <div>
                       <p className="text-xs text-muted-foreground">Category</p>
-                      <p className="mt-1 text-sm font-medium">{labelFor(REQUEST_CATEGORIES, request.category)}</p>
+                      <p className="mt-1 text-sm font-medium">{request.requestCategory?.name ?? labelFor(REQUEST_CATEGORIES, request.category)}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Department</p>

@@ -74,7 +74,7 @@ export function PushNotificationManager() {
       if (seen.size > 200) seen.delete(seen.values().next().value!);
       void qc.invalidateQueries({ queryKey: [...notificationKeys.all, userId] });
       const category = payload.data?.category;
-      const invalidationKeys: Partial<Record<NotificationCategory, string>> = { REQUEST: "employee-requests", LEAVE: "leaves", DOCUMENT: "documents", ATTENDANCE: "attendance" };
+      const invalidationKeys: Partial<Record<NotificationCategory, string>> = { RESOURCE: "resources", REQUEST: "employee-requests", LEAVE: "leaves", DOCUMENT: "documents", ATTENDANCE: "attendance" };
       const key = category ? invalidationKeys[category as NotificationCategory] : undefined;
       if (key) void qc.invalidateQueries({ queryKey: [key] });
       if (category === "ANNOUNCEMENT") void qc.invalidateQueries({ queryKey: announcementKeys.employee });

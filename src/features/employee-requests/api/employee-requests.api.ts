@@ -21,8 +21,13 @@ export const getAdminRequestSummary = async (params: RequestQuery) =>
 export const getRequest = async (id: string, admin: boolean) =>
   (await api.get<RequestResponse>(`${admin ? "/admin" : ""}/employee-requests/${id}`)).data;
 
-export const createRequest = async (payload: CreateRequestPayload) =>
-  (await api.post<RequestResponse>("/employee-requests", payload)).data;
+export const createRequest = async (payload: CreateRequestPayload) => {
+  const { attachments, ...fields } = payload;
+  const body = new FormData();
+  Object.entries(fields).forEach(([key, value]) => { if (value !== undefined) body.append(key, String(value)); });
+  attachments?.forEach(file => body.append("attachments", file));
+  return (await api.post<RequestResponse>("/employee-requests", body)).data;
+};
 
 export const cancelRequest = async (id: string) =>
   (await api.patch(`/employee-requests/${id}/cancel`)).data;

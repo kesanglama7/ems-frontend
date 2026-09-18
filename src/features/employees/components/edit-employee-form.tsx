@@ -1,4 +1,6 @@
 "use client";
+import { Choice } from "@/components/shared/admin/shared";
+import { localDateInput } from "@/features/office/api";
 
 import {
   useEffect,
@@ -123,6 +125,8 @@ export function EditEmployeeForm({
         jobTitle: "",
         departmentId: "",
         dateOfJoining: "",
+        dateOfBirth: "",
+        gender: "",
         workMode: "ON_FIELD",
       },
     });
@@ -136,6 +140,8 @@ export function EditEmployeeForm({
     }
 
     form.reset({
+      dateOfBirth: employee.dateOfBirth?.slice(0,10) ?? "",
+      gender: employee.gender ?? "",
       firstName:
         employee.firstName,
       lastName:
@@ -268,6 +274,8 @@ export function EditEmployeeForm({
   ) {
     const payload:
       UpdateEmployeePayload = {
+        dateOfBirth: values.dateOfBirth || null,
+        gender: values.gender || null,
       firstName:
         values.firstName.trim(),
 
@@ -350,6 +358,10 @@ export function EditEmployeeForm({
           </div>
 
           <FieldGroup>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Controller name="dateOfBirth" control={form.control} render={({field,fieldState}) => <Field data-invalid={fieldState.invalid}><FieldLabel htmlFor="dateOfBirth">Date of birth</FieldLabel><Input {...field} id="dateOfBirth" type="date" max={localDateInput()} aria-invalid={fieldState.invalid} /><p className="text-xs text-muted-foreground">Used for birthday wishes. Birth year is not shared with teammates.</p>{fieldState.error && <FieldError errors={[fieldState.error]} />}</Field>} />
+              <Controller name="gender" control={form.control} render={({field,fieldState}) => <Field data-invalid={fieldState.invalid}><FieldLabel htmlFor="gender">Gender</FieldLabel><Choice {...field} id="gender"><option value="">Not specified</option><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option></Choice><p className="text-xs text-muted-foreground">Determines eligibility for gender-specific leave.</p>{fieldState.error && <FieldError errors={[fieldState.error]} />}</Field>} />
+            </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <Controller
                 name="firstName"

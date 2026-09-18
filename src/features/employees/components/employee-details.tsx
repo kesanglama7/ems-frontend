@@ -259,6 +259,8 @@ export function EmployeeDetails({
               }
             />
 
+            <DetailItem icon={<CalendarDays className="size-4" />} label="Date of birth" value={formatDate(employee.dateOfBirth)} />
+            <DetailItem icon={<UserRound className="size-4" />} label="Gender" value={employee.gender ? employee.gender.charAt(0) + employee.gender.slice(1).toLowerCase() : "Not specified"} />
             <DetailItem
               icon={
                 <CalendarDays className="size-4" />

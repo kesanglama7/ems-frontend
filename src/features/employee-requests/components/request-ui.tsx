@@ -56,5 +56,5 @@ export function PriorityBadge({ priority }: { priority: RequestPriority }) {
 }
 
 export function CategoryLabel({ request }: { request: EmployeeRequest }) {
-  return <>{labelFor(REQUEST_CATEGORIES, request.category)}</>;
+  return <>{request.requestCategory?.name ?? labelFor(REQUEST_CATEGORIES, request.category)}</>;
 }

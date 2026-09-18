@@ -1,3 +1,4 @@
+import type { Gender } from "@/features/office/api";
 export interface EmployeeProfileDepartment {
   id: string;
   name: string;
@@ -19,6 +20,8 @@ export interface EmployeeProfile {
   lastName: string;
   phone: string | null;
   jobTitle: string | null;
+  dateOfBirth: string | null;
+  gender: Gender | null;
   dateOfJoining: string | null;
 
   userId: string;

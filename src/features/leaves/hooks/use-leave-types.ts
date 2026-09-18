@@ -23,7 +23,7 @@ export function useCreateLeaveType() {
     mutationFn: createLeaveType,
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({
-        queryKey: leaveKeys.types(),
+        queryKey: leaveKeys.all,
       });
       toast.success(data.message || "Leave type created successfully.");
     },
@@ -40,7 +40,7 @@ export function useUpdateLeaveType() {
     mutationFn: updateLeaveType,
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({
-        queryKey: leaveKeys.types(),
+        queryKey: leaveKeys.all,
       });
       toast.success(data.message || "Leave type updated successfully.");
     },
@@ -57,7 +57,7 @@ export function useDeactivateLeaveType() {
     mutationFn: deleteLeaveType,
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({
-        queryKey: leaveKeys.types(),
+        queryKey: leaveKeys.all,
       });
       toast.success(data.message || "Leave type deactivated successfully.");
     },
@@ -86,7 +86,7 @@ export function useToggleLeaveTypeActive() {
     },
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({
-        queryKey: leaveKeys.types(),
+        queryKey: leaveKeys.all,
       });
       toast.success(data.message || "Leave type updated successfully.");
     },

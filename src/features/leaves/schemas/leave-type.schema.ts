@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 export const leaveTypeSchema = z.object({
+  audience: z.enum(["ALL", "SELECTED"]),
+  eligibleGender: z.enum(["ALL", "MALE", "FEMALE", "OTHER"]),
   name: z
     .string()
     .trim()

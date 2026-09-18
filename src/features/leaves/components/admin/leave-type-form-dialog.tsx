@@ -1,13 +1,16 @@
 "use client";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 import { useEffect } from "react";
-import {
-  Controller,
-  useForm,
-} from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +30,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { getApiErrorMessage } from "@/lib/api-error";
 
 import { useCreateLeaveType } from "../../hooks/use-leave-types";
 import { useUpdateLeaveType } from "../../hooks/use-leave-types";
@@ -54,31 +56,31 @@ export function LeaveTypeFormDialog({
 }: LeaveTypeFormDialogProps) {
   const isEditing = Boolean(leaveType);
 
-  const createMutation =
-    useCreateLeaveType();
+  const createMutation = useCreateLeaveType();
 
-  const updateMutation =
-    useUpdateLeaveType();
+  const updateMutation = useUpdateLeaveType();
 
-  const isPending =
-    createMutation.isPending ||
-    updateMutation.isPending;
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const form =
-    useForm<LeaveTypeFormValues>({
-      resolver: zodResolver(
-        leaveTypeSchema,
-      ),
-      defaultValues: {
-        name: "",
-        description: "",
-        yearlyAllowance: 0,
-        hasLimitedBalance: false,
-        allowHalfDay: true,
-        isEmployeeRequestable: true,
-        isPaid: true,
-      },
-    });
+  const form = useForm<LeaveTypeFormValues>({
+    resolver: zodResolver(leaveTypeSchema),
+    defaultValues: {
+      audience: "ALL",
+      eligibleGender: "ALL",
+      name: "",
+      description: "",
+      yearlyAllowance: 0,
+      hasLimitedBalance: false,
+      allowHalfDay: true,
+      isEmployeeRequestable: true,
+      isPaid: true,
+    },
+  });
+
+  const limited = useWatch({
+    control: form.control,
+    name: "hasLimitedBalance",
+  });
 
   useEffect(() => {
     if (!open) {
@@ -87,10 +89,11 @@ export function LeaveTypeFormDialog({
 
     if (leaveType) {
       form.reset({
+        audience: leaveType.audience ?? "ALL",
+        eligibleGender: leaveType.eligibleGender ?? "ALL",
         name: leaveType.name,
-        description:
-          leaveType.description ?? "",
-        yearlyAllowance: leaveType.yearlyAllowance,
+        description: leaveType.description ?? "",
+        yearlyAllowance: Number(leaveType.yearlyAllowance),
         hasLimitedBalance: leaveType.hasLimitedBalance,
         allowHalfDay: leaveType.allowHalfDay,
         isEmployeeRequestable: leaveType.isEmployeeRequestable,
@@ -101,6 +104,8 @@ export function LeaveTypeFormDialog({
     }
 
     form.reset({
+      audience: "ALL",
+      eligibleGender: "ALL",
       name: "",
       description: "",
       yearlyAllowance: 0,
@@ -109,46 +114,40 @@ export function LeaveTypeFormDialog({
       isEmployeeRequestable: true,
       isPaid: true,
     });
-  }, [
-    open,
-    leaveType,
-    form,
-  ]);
+  }, [open, leaveType, form]);
 
-  async function onSubmit(
-    values: LeaveTypeFormValues,
-  ) {
+  async function onSubmit(values: LeaveTypeFormValues) {
     try {
       if (leaveType) {
-        const payload:
-          UpdateLeaveTypePayload = {
+        const payload: UpdateLeaveTypePayload = {
+          audience: values.audience,
+          eligibleGender:
+            values.eligibleGender === "ALL" ? null : values.eligibleGender,
           name: values.name.trim(),
-          description:
-            values.description.trim(),
+          description: values.description.trim(),
           yearlyAllowance: values.yearlyAllowance,
-          hasLimitedBalance: values.hasLimitedBalance,
+          ...(leaveType &&
+          values.hasLimitedBalance === leaveType.hasLimitedBalance
+            ? {}
+            : { hasLimitedBalance: values.hasLimitedBalance }),
           allowHalfDay: values.allowHalfDay,
           isEmployeeRequestable: values.isEmployeeRequestable,
           isPaid: values.isPaid,
         };
 
-        const response =
-          await updateMutation.mutateAsync({
-            leaveTypeId:
-              leaveType.id,
-            payload,
-          });
-
+        await updateMutation.mutateAsync({
+          leaveTypeId: leaveType.id,
+          payload,
+        });
       } else {
-        const description =
-          values.description.trim();
+        const description = values.description.trim();
 
-        const payload:
-          CreateLeaveTypePayload = {
+        const payload: CreateLeaveTypePayload = {
+          audience: values.audience,
+          eligibleGender:
+            values.eligibleGender === "ALL" ? null : values.eligibleGender,
           name: values.name.trim(),
-          description:
-            description ||
-            undefined,
+          description: description || undefined,
           yearlyAllowance: values.yearlyAllowance,
           hasLimitedBalance: values.hasLimitedBalance,
           allowHalfDay: values.allowHalfDay,
@@ -156,18 +155,12 @@ export function LeaveTypeFormDialog({
           isPaid: values.isPaid,
         };
 
-        const response =
-          await createMutation.mutateAsync(
-            payload,
-          );
-
+        await createMutation.mutateAsync(payload);
       }
 
       onOpenChange(false);
-    } catch (error) {
-      toast.error(
-        getApiErrorMessage(error),
-      );
+    } catch {
+      // Mutation hooks show the API error; keep the form open.
     }
   }
 
@@ -182,12 +175,10 @@ export function LeaveTypeFormDialog({
         onOpenChange(nextOpen);
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {isEditing
-              ? "Edit leave type"
-              : "Create leave type"}
+            {isEditing ? "Edit leave type" : "Create leave type"}
           </DialogTitle>
 
           <DialogDescription>
@@ -197,32 +188,14 @@ export function LeaveTypeFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          id="leave-type-form"
-          onSubmit={form.handleSubmit(
-            onSubmit,
-          )}
-        >
-          <FieldGroup className="-space-y-2">
+        <form id="leave-type-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <FieldGroup className="-space-y-3">
             <Controller
               name="name"
               control={form.control}
-              render={({
-                field,
-                fieldState,
-              }) => (
-                <Field
-                  data-invalid={
-                    fieldState.invalid
-                  }
-                >
-                  <FieldLabel
-                    htmlFor={
-                      field.name
-                    }
-                  >
-                    Leave type name
-                  </FieldLabel>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Leave type name</FieldLabel>
 
                   <Input
                     {...field}
@@ -230,91 +203,178 @@ export function LeaveTypeFormDialog({
                     autoFocus
                     maxLength={100}
                     placeholder="Annual leave"
-                    aria-invalid={
-                      fieldState.invalid
-                    }
+                    aria-invalid={fieldState.invalid}
                   />
 
                   {fieldState.invalid && (
-                    <FieldError
-                      errors={[
-                        fieldState.error,
-                      ]}
-                    />
+                    <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
               )}
             />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Controller
+                name="audience"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="leave-audience">
+                      Available to
+                    </FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        if (value) field.onChange(value);
+                      }}
+                      disabled={isPending}
+                    >
+                      <SelectTrigger
+                        id="leave-audience"
+                        onBlur={field.onBlur}
+                        aria-invalid={fieldState.invalid}
+                      >
+                        <SelectValue>
+                          {
+                            {
+                              ALL: "All eligible employees",
+                              SELECTED: "Selected employees only",
+                            }[field.value]
+                          }
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">
+                          All eligible employees
+                        </SelectItem>
+                        <SelectItem value="SELECTED">
+                          Selected employees only
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FieldError errors={[fieldState.error]} />
+                  </Field>
+                )}
+              />
+              <Controller
+                name="eligibleGender"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="leave-gender">
+                      Gender eligibility
+                    </FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        if (value) field.onChange(value);
+                      }}
+                      disabled={isPending}
+                    >
+                      <SelectTrigger
+                        id="leave-gender"
+                        onBlur={field.onBlur}
+                        aria-invalid={fieldState.invalid}
+                      >
+                        <SelectValue>
+                          {
+                            {
+                              ALL: "All genders",
+                              MALE: "Male only",
+                              FEMALE: "Female only",
+                              OTHER: "Other only",
+                            }[field.value]
+                          }
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL">All genders</SelectItem>
+                        <SelectItem value="MALE">Male only</SelectItem>
+                        <SelectItem value="FEMALE">Female only</SelectItem>
+                        <SelectItem value="OTHER">Other only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FieldError errors={[fieldState.error]} />
+                  </Field>
+                )}
+              />
+            </div>
+            <hr className="border-t" />
 
-            <Controller 
-              name="hasLimitedBalance" 
-              control={form.control} 
-              render={({ field }) => 
+            <div className="flex flex-col gap-y-3">
+              <Controller
+                name="allowHalfDay"
+                control={form.control}
+                render={({ field }) => (
+                  <Field orientation="horizontal">
+                    <FieldLabel>Half day</FieldLabel>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </Field>
+                )}
+              />
+              <Controller
+                name="isPaid"
+                control={form.control}
+                render={({ field }) => (
+                  <Field orientation="horizontal">
+                    <FieldLabel>Paid</FieldLabel>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </Field>
+                )}
+              />
+
+            <Controller
+              name="hasLimitedBalance"
+              control={form.control}
+              render={({ field }) => (
                 <Field orientation="horizontal">
                   <div className="flex-1">
                     <FieldLabel>Limited yearly balance</FieldLabel>
                   </div>
-                  <Switch checked={field.value} onCheckedChange={field.onChange}/>
-                </Field>} 
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </Field>
+              )}
             />
-              {form.watch("hasLimitedBalance") && 
-                <Controller 
-                  name="yearlyAllowance" 
-                  control={form.control} render={({ field, fieldState }) => 
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Days per year</FieldLabel>
-                      <Input {...field} type="number" min="0" step="0.5" onChange={(event) => field.onChange(event.target.valueAsNumber)} aria-invalid={fieldState.invalid}/>
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]}/>}
-                    </Field>} 
-                />}
-              <hr className="border-t" />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Controller 
-                  name="allowHalfDay" 
-                  control={form.control} render={({ field }) => 
-                    <Field orientation="horizontal">
-                      <FieldLabel>Half day</FieldLabel>
-                      <Switch checked={field.value} onCheckedChange={field.onChange}/>
-                    </Field>} 
-                />
-                {/* <Controller 
-                name="isEmployeeRequestable" 
-                control={form.control} render={({ field }) =>
-                  <Field orientation="horizontal">
-                    <FieldLabel>Employee request</FieldLabel>
-                    <Switch checked={field.value} onCheckedChange={field.onChange}/>
-                  </Field>} 
-                /> */}
-                <Controller 
-                name="isPaid" 
-                control={form.control} 
-                render={({ field }) => 
-                  <Field orientation="horizontal">
-                    <FieldLabel>Paid</FieldLabel>
-                    <Switch checked={field.value} onCheckedChange={field.onChange}/>
-                  </Field>}
-                />
-              </div>
+            {limited && (
+              <Controller
+                name="yearlyAllowance"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>Days per year</FieldLabel>
+                    <Input
+                      {...field}
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      onChange={(event) =>
+                        field.onChange(event.target.valueAsNumber)
+                      }
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            )}
+            </div>
             <hr className="border-t" />
             <Controller
               name="description"
               control={form.control}
-              render={({
-                field,
-                fieldState,
-              }) => (
-                <Field
-                  data-invalid={
-                    fieldState.invalid
-                  }
-                >
-                  <FieldLabel
-                    htmlFor={
-                      field.name
-                    }
-                  >
-                    Description
-                  </FieldLabel>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Description</FieldLabel>
 
                   <Textarea
                     {...field}
@@ -322,17 +382,11 @@ export function LeaveTypeFormDialog({
                     rows={4}
                     maxLength={500}
                     placeholder="Paid time off for vacation."
-                    aria-invalid={
-                      fieldState.invalid
-                    }
+                    aria-invalid={fieldState.invalid}
                   />
 
                   {fieldState.invalid && (
-                    <FieldError
-                      errors={[
-                        fieldState.error,
-                      ]}
-                    />
+                    <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
               )}
@@ -345,21 +399,13 @@ export function LeaveTypeFormDialog({
             type="button"
             variant="outline"
             disabled={isPending}
-            onClick={() =>
-              onOpenChange(false)
-            }
+            onClick={() => onOpenChange(false)}
           >
             Cancel
           </Button>
 
-          <Button
-            type="submit"
-            form="leave-type-form"
-            disabled={isPending}
-          >
-            {isPending && (
-              <LoaderCircle className="size-4 animate-spin" />
-            )}
+          <Button type="submit" form="leave-type-form" disabled={isPending}>
+            {isPending && <LoaderCircle className="size-4 animate-spin" />}
 
             {isPending
               ? isEditing

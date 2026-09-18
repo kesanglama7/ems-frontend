@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
     Bell,
+    Building2,
     CalendarCheck,
     CalendarDays,
     FileText,
@@ -69,6 +70,8 @@ const employeeNavigation: NavItem[] = [
     href: "/employee/requests",
     icon: MessageSquareWarning,
   },
+  { title: "Office Calendar", href: "/employee/office-calendar", icon: CalendarDays },
+  { title: "Resources", href: "/employee/resources", icon: Building2 },
   {
     title: "Announcements",
     href: "/employee/announcements",

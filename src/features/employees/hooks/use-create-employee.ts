@@ -12,6 +12,7 @@ export function useCreateEmployee() {
     mutationFn: createEmployee,
 
     onSuccess: async () => {
+      await Promise.all(["leaves", "birthdays", "birthday-greeting"].map(key => queryClient.invalidateQueries({ queryKey: [key] })));
       await queryClient.invalidateQueries({
         queryKey:
           employeeKeys.lists(),

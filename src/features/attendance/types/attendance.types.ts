@@ -14,6 +14,8 @@ export interface AttendanceRecord {
   isLate: boolean;
   lateMinutes: number;
   earlyMinutes: number;
+  earlyCheckoutMinutes: number;
+  isEarlyCheckout: boolean;
   afterHoursMinutes: number;
   totalMinutes: number | null;
   overtimeMinutes: number | null;

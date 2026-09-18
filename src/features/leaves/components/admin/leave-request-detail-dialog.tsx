@@ -27,7 +27,8 @@ import {
 import { LEAVE_STATUS_LABELS } from "../../constants/leave.constants";
 import type { LeaveStatus } from "../../types/leave.types";
 
-type View = "details" | "approve" | "reject" | "recover" | "cancel";
+// Removed "approve" from the View type since it's now a direct action
+type View = "details" | "reject" | "recover" | "cancel";
 
 interface LeaveRequestDetailDialogProps {
   open: boolean;
@@ -59,17 +60,13 @@ const viewCopy: Record<View, { title: string; description: string }> = {
     title: "Leave request details",
     description: "Review this request and its current status.",
   },
-  approve: {
-    title: "Approve leave request",
-    description: "Confirm the decision before approving this request.",
-  },
   reject: {
     title: "Reject leave request",
     description: "Explain the decision before rejecting this request.",
   },
   recover: {
-    title: "Approve rejected request",
-    description: "Correct an accidental or automatic rejection.",
+    title: "Approve automatically rejected request",
+    description: "Approve a request missed before its review deadline. Add a reason for the late approval.",
   },
   cancel: {
     title: "Cancel approved leave",
@@ -100,6 +97,7 @@ function LeaveRequestDetailDialogBody({
   const rejectLeave = useRejectLeave();
   const cancelLeave = useCancelAdminLeave();
   const leave = detail.data?.data;
+  
   const isSubmitting =
     approveLeave.isPending || rejectLeave.isPending || cancelLeave.isPending;
 
@@ -116,13 +114,23 @@ function LeaveRequestDetailDialogBody({
   }
 
   const canSubmit = Boolean(
-    ((view === "approve" || view === "reject") && leave?.status === "PENDING") ||
-    (view === "recover" &&
-      (leave?.status === "REJECTED" || leave?.status === "AUTO_REJECTED")) ||
+    (view === "reject" && leave?.status === "PENDING") ||
+    (view === "recover" && leave?.status === "AUTO_REJECTED") ||
     (view === "cancel" && leave?.status === "APPROVED"),
   );
 
   const requiresNote = view === "reject" || view === "recover" || view === "cancel";
+
+  // Handles direct approval directly from the details view
+  async function handleDirectApprove() {
+    if (!leave || isSubmitting) return;
+    try {
+      await approveLeave.mutateAsync({ leaveId, payload: {} });
+      onOpenChange(false);
+    } catch {
+      // The mutation hooks show API errors. Keep this dialog open for correction.
+    }
+  }
 
   async function submitAction() {
     if (!leave || !canSubmit || isSubmitting) return;
@@ -134,9 +142,7 @@ function LeaveRequestDetailDialogBody({
     }
 
     try {
-      if (view === "approve") {
-        await approveLeave.mutateAsync({ leaveId, payload: {} });
-      } else if (view === "recover") {
+      if (view === "recover") {
         await approveLeave.mutateAsync({ leaveId, payload: { note: trimmedNote } });
       } else if (view === "reject") {
         await rejectLeave.mutateAsync({ leaveId, payload: { note: trimmedNote } });
@@ -259,11 +265,6 @@ function LeaveRequestDetailDialogBody({
                 </div>
               )}
 
-              {view === "approve" && (
-                <p className="mt-5 text-sm text-muted-foreground">
-                  Approving this request does not require a note.
-                </p>
-              )}
               {view === "recover" && (
                 <p className="mt-5 text-sm text-muted-foreground">
                   This changes the rejected request to approved. Explain why the
@@ -321,37 +322,37 @@ function LeaveRequestDetailDialogBody({
             <DialogFooter className="border-t pt-4">
               {view === "details" && leave.status === "PENDING" && (
                 <>
-                  <Button type="button" variant="outline" onClick={() => changeView("reject")}>
+                  <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => changeView("reject")}>
                     <X className="size-4" /> Reject
                   </Button>
-                  <Button type="button" onClick={() => changeView("approve")}>
-                    <Check className="size-4" /> Approve
+                  <Button type="button" disabled={isSubmitting} onClick={handleDirectApprove}>
+                    {approveLeave.isPending ? "Approving..." : <><Check className="size-4" /> Approve</>}
                   </Button>
                 </>
               )}
               {view === "details" &&
-                (leave.status === "REJECTED" || leave.status === "AUTO_REJECTED") && (
+                leave.status === "AUTO_REJECTED" && (
                   <>
-                    <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                    <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => handleOpenChange(false)}>
                       Close
                     </Button>
-                    <Button type="button" onClick={() => changeView("recover")}>
+                    <Button type="button" disabled={isSubmitting} onClick={() => changeView("recover")}>
                       <RotateCcw className="size-4" /> Approve instead
                     </Button>
                   </>
                 )}
               {view === "details" && leave.status === "APPROVED" && (
                 <>
-                  <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                  <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => handleOpenChange(false)}>
                     Close
                   </Button>
-                  <Button type="button" variant="destructive" onClick={() => changeView("cancel")}>
+                  <Button type="button" variant="destructive" disabled={isSubmitting} onClick={() => changeView("cancel")}>
                     Cancel approved leave
                   </Button>
                 </>
               )}
               {view === "details" && leave.status === "CANCELLED" && (
-                <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => handleOpenChange(false)}>
                   Close
                 </Button>
               )}
@@ -368,7 +369,7 @@ function LeaveRequestDetailDialogBody({
                   >
                     {view === "cancel" ? cancelLeave.isPending ? "Cancelling..." : "Confirm cancellation" :
                       view === "reject" ? rejectLeave.isPending ? "Rejecting..." : "Confirm rejection" :
-                        approveLeave.isPending ? "Approving..." : "Confirm approval"}
+                        "Submit"}
                   </Button>
                 </>
               )}

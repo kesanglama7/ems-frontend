@@ -194,7 +194,7 @@ export function AdminAnnouncementsPage() {
                                                       item.id ===
                                                       notice.departmentId,
                                               )?.name ?? "Department")
-                                            : "All employees"}{" "}
+                                            : "All departments"}{" "}
                                         ·{" "}
                                         {notice.status === "SCHEDULED"
                                             ? `Scheduled ${formatNoticeDate(notice.publishAt)}`
@@ -244,7 +244,7 @@ export function AdminAnnouncementsPage() {
                     open
                     onClose={() => setEditing(null)}
                     existing={editing === "new" ? undefined : editing}
-                    onSaved={(id) => setSelected(id)}
+                    onSaved={() => void list.refetch()}
                 />
             )}
             {selected && (
@@ -344,7 +344,7 @@ function AdminAnnouncementDetail({
                     <DialogTitle>{item?.title ?? "Announcement"}</DialogTitle>
                     <DialogDescription>
                         {item
-                            ? `${statusLabel[item.status]} · ${priorityLabel[item.priority]} · ${item.audience === "DEPARTMENT" ? (departmentName ?? "Department") : "All employees"}`
+                            ? `${statusLabel[item.status]} · ${priorityLabel[item.priority]} · ${item.audience === "DEPARTMENT" ? (departmentName ?? "Department") : "All departments"}`
                             : "Loading announcement details…"}
                     </DialogDescription>
                 </DialogHeader>

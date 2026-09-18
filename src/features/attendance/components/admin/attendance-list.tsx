@@ -1052,7 +1052,7 @@ export default function AdminAttendanceLists() {
                       <TableCell>
                         {formatTime(
                           record.checkOutAt,
-                        )}
+                        )}{record.earlyCheckoutMinutes > 0 && <p className="text-xs font-medium text-amber-700">Left {record.earlyCheckoutMinutes} min early</p>}
                       </TableCell>
 
                       <TableCell>
@@ -1375,7 +1375,7 @@ export default function AdminAttendanceLists() {
                     {formatTime(
                       detailData.data
                         .checkOutAt,
-                    )}
+                    )}{detailData.data.earlyCheckoutMinutes > 0 && <span className="block text-xs text-amber-700">Left {detailData.data.earlyCheckoutMinutes} min early</span>}
                   </p>
                 </div>
 

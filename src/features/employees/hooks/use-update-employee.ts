@@ -30,6 +30,7 @@ export function useUpdateEmployee() {
       _response,
       variables,
     ) => {
+      await Promise.all(["leaves", "birthdays", "birthday-greeting"].map(key => queryClient.invalidateQueries({ queryKey: [key] })));
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey:

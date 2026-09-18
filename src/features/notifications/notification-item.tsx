@@ -8,7 +8,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { useDeleteNotification, useMarkNotificationRead } from "./hooks";
 import { categoryLabels, notificationHref } from "./notification-utils";
 import type { Notification } from "./types";
-const icons = { LEAVE: CalendarDays, REQUEST: MessageSquare, DOCUMENT: FileText, ATTENDANCE: Clock3, ANNOUNCEMENT: Megaphone };
+const icons = { RESOURCE: MessageSquare, LEAVE: CalendarDays, REQUEST: MessageSquare, DOCUMENT: FileText, ATTENDANCE: Clock3, ANNOUNCEMENT: Megaphone };
 export function NotificationItem({ item, onNavigate, compact = false }: { item: Notification; onNavigate?: () => void; compact?: boolean }) {
   const role = useAuthStore((s) => s.user?.role) ?? "EMPLOYEE";
   const read = useMarkNotificationRead();

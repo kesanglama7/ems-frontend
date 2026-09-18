@@ -1,5 +1,5 @@
-export type NotificationCategory = "LEAVE" | "REQUEST" | "DOCUMENT" | "ATTENDANCE" | "ANNOUNCEMENT";
-export type NotificationEntityType = "LEAVE_REQUEST" | "EMPLOYEE_REQUEST" | "DOCUMENT" | "ATTENDANCE" | "LEAVE_BALANCE" | "ANNOUNCEMENT";
+export type NotificationCategory = "RESOURCE" | "LEAVE" | "REQUEST" | "DOCUMENT" | "ATTENDANCE" | "ANNOUNCEMENT";
+export type NotificationEntityType = "RESOURCE_ASSIGNMENT" | "LEAVE_REQUEST" | "EMPLOYEE_REQUEST" | "DOCUMENT" | "ATTENDANCE" | "LEAVE_BALANCE" | "ANNOUNCEMENT";
 export interface Notification {
   id: string;
   type: string;

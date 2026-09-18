@@ -191,7 +191,7 @@ export default function AdminLeaveBalanceList() {
                 filteredEmployees.map((employee) => {
                   const isExpanded = expandedEmployeeId === employee.id;
                   const pendingDays = employee.balances.reduce(
-                    (total, balance) => total + balance.pendingDays,
+                    (total, balance) => total + (balance.pendingDays ?? 0),
                     0,
                   );
 
@@ -366,8 +366,7 @@ export default function AdminLeaveBalanceList() {
                                               Unlimited Balance
                                             </p>
                                             <p className="mt-0.5 text-foreground">
-                                              {balance.usedDays} used ·{" "}
-                                              {balance.pendingDays} pending
+                                              {balance.usedDays === null ? "No balance limit applies" : `${balance.usedDays} used · ${balance.pendingDays ?? 0} pending`}
                                             </p>
                                           </div>
                                         )}

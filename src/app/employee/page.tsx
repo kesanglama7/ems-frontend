@@ -1,4 +1,5 @@
 "use client";
+import { UpcomingBirthdays } from "@/features/office/birthdays";
 
 import { LiveClock } from "@/features/attendance/components/employee/live-clock";
 import { CheckInControl } from "@/features/attendance/components/employee/check-in-control";
@@ -7,7 +8,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, CalendarDays, Briefcase, AlertCircle } from "lucide-react";
-import { EmployeeDashboardNotices } from "@/features/announcements/components/employee/dashboard-notices";
 
 const DAY_MAP: Record<string, number> = {
   SUNDAY: 0, MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3, THURSDAY: 4, FRIDAY: 5, SATURDAY: 6,
@@ -108,7 +108,7 @@ export default function EmployeeDashboardPage() {
           </Card>
         </div>
       </div>
-      <EmployeeDashboardNotices />
+      <UpcomingBirthdays />
     </main>
   );
 }

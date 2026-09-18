@@ -1,5 +1,6 @@
 "use client";
 
+import { useHolidays, useOfficeQuery } from "@/features/office/api";
 import { useState } from "react";
 import {
   MapPin,
@@ -162,7 +163,11 @@ export const CheckInControl = () => {
   const attendance =
     todayResponse?.data.attendance;
   const todayLeave = todayResponse?.data.leave;
-  const canCheckIn = todayResponse?.data.canCheckIn ?? true;
+  const office = useOfficeQuery<{timezone: string}>("office-settings", "/office-settings");
+  const officeDate = new Intl.DateTimeFormat("en-CA", { timeZone: office.data?.data.timezone ?? "Asia/Kathmandu", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  const holidays = useHolidays(Number(officeDate.slice(0,4)));
+  const closure = holidays.data?.data.find(h => h.isOfficeClosed && h.date.slice(0,10) === officeDate);
+  const canCheckIn = (todayResponse?.data.canCheckIn ?? true) && !closure;
 
   const isCheckedIn =
     !!attendance?.checkInAt &&
@@ -365,6 +370,7 @@ export const CheckInControl = () => {
       </CardHeader>
 
       <CardContent className="space-y-5">
+        {closure && <div className="rounded-lg border bg-muted p-3 text-sm">Office closed today: {closure.name}. Check-in is unavailable. An existing attendance session can still be checked out.</div>}
         {todayLeave?.isOnLeave && <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-200">You are on {todayLeave.leaveType?.name ?? "approved leave"} today{todayLeave.duration && todayLeave.duration !== "FULL_DAY" ? ` (${todayLeave.duration.replaceAll("_", " ").toLowerCase()})` : ""}. {canCheckIn ? "Half-day attendance is still available." : "Check-in is disabled for this full-day leave."}</div>}
         {/* Attendance information */}
 
@@ -466,7 +472,7 @@ export const CheckInControl = () => {
                 <p className="font-semibold">
                   {formatTime(
                     attendance.checkOutAt,
-                  )}
+                  )}{attendance.earlyCheckoutMinutes > 0 && <span className="block text-xs text-amber-700">Left {attendance.earlyCheckoutMinutes} min early</span>}
                 </p>
               </div>
 

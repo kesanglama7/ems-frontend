@@ -1,5 +1,5 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { LoaderCircle, Megaphone, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useDepartments } from "@/features/departments/hooks/use-departments";
-import { priorityLabel, localDateTime } from "../../format";
-import { useSaveAnnouncement } from "../../hooks";
+import { priorityLabel } from "../../format";
+import { usePublishAnnouncement, useSaveAnnouncement } from "../../hooks";
 import type {
     Announcement,
     AnnouncementAudience,
@@ -39,14 +39,6 @@ const priorityItems: Array<{
     { label: priorityLabel.URGENT, value: "URGENT" },
 ];
 
-const audienceItems: Array<{
-    label: string;
-    value: AnnouncementAudience;
-}> = [
-    { label: "All employees", value: "ALL_EMPLOYEES" },
-    { label: "One department", value: "DEPARTMENT" },
-];
-
 export function AnnouncementForm({
     open,
     onClose,
@@ -60,6 +52,10 @@ export function AnnouncementForm({
 }) {
     const departments = useDepartments();
     const save = useSaveAnnouncement();
+    const publish = usePublishAnnouncement();
+    const savedId = useRef(existing?.id);
+    const [submitting, setSubmitting] = useState(false);
+    const busy = submitting || save.isPending || publish.isPending;
     const [title, setTitle] = useState(existing?.title ?? "");
     const [body, setBody] = useState(existing?.body ?? "");
     const [priority, setPriority] = useState<AnnouncementPriority>(
@@ -77,17 +73,26 @@ export function AnnouncementForm({
     const [acknowledgmentRequired, setAcknowledgmentRequired] = useState(
         existing?.acknowledgmentRequired ?? false,
     );
-    const [expiry, setExpiry] = useState(localDateTime(existing?.expiresAt));
     const [error, setError] = useState("");
-    const activeDepartments =
-        departments.data?.data.filter((item) => item.isActive) ?? [];
-    const departmentItems = activeDepartments.map((item) => ({
-        label: item.name,
-        value: item.id,
-    }));
+    const availableDepartments =
+        departments.data?.data.filter(
+            (item) => item.isActive || item.id === departmentId,
+        ) ?? [];
+    const audienceItems = [
+        { label: "All departments", value: "ALL_EMPLOYEES" },
+        ...availableDepartments.map((item) => ({
+            label: `${item.name}${item.isActive ? "" : " (inactive)"}`,
+            value: `department:${item.id}`,
+        })),
+    ];
 
     async function submit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        if (busy) return;
+        const publishNow =
+            (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") ===
+            "publish";
+        setError("");
         const name = title.trim();
         const content = body.trim();
         if (
@@ -105,16 +110,6 @@ export function AnnouncementForm({
             setError("Choose a department before saving.");
             return;
         }
-        if (existing?.expiresAt && !expiry) {
-            setError(
-                "An existing expiry cannot be removed. Choose a new date instead.",
-            );
-            return;
-        }
-        if (expiry && new Date(expiry).getTime() <= Date.now()) {
-            setError("The expiry must be in the future.");
-            return;
-        }
         const payload: AnnouncementPayload = {
             title: name,
             body: content,
@@ -123,17 +118,28 @@ export function AnnouncementForm({
             ...(audience === "DEPARTMENT" ? { departmentId } : {}),
             showOnLogin,
             acknowledgmentRequired,
-            ...(expiry ? { expiresAt: new Date(expiry).toISOString() } : {}),
         };
+        setSubmitting(true);
         try {
             const response = await save.mutateAsync({
-                id: existing?.id,
+                id: savedId.current,
                 payload,
             });
+            savedId.current = response.data.id;
+            if (publishNow) {
+                try {
+                    await publish.mutateAsync(response.data.id);
+                } catch {
+                    setError("Draft saved, but publication failed. Try Publish now again.");
+                    return;
+                }
+            }
             onClose();
             onSaved?.(response.data.id);
         } catch {
             /* The mutation shows the server error. */
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -141,7 +147,7 @@ export function AnnouncementForm({
         <Dialog
             open={open}
             onOpenChange={(next) => {
-                if (!next && !save.isPending) onClose();
+                if (!next && !busy) onClose();
             }}
         >
             <DialogContent className="max-h-[min(80dvh,720px)] overflow-y-auto sm:max-w-xl">
@@ -151,8 +157,7 @@ export function AnnouncementForm({
                         {existing ? "Edit announcement" : "New announcement"}
                     </DialogTitle>
                     <DialogDescription>
-                        Save as a draft first. Employees are notified only when
-                        you publish it.
+                        Save a draft or publish now to notify employees.
                     </DialogDescription>
                 </DialogHeader>
                 <form
@@ -223,10 +228,21 @@ export function AnnouncementForm({
                             <Label htmlFor="notice-audience">Audience</Label>
                             <Select
                                 items={audienceItems}
-                                value={audience}
+                                value={
+                                    audience === "DEPARTMENT"
+                                        ? `department:${departmentId}`
+                                        : "ALL_EMPLOYEES"
+                                }
                                 onValueChange={(value) => {
-                                    if (value) {
-                                        setAudience(value);
+                                    if (!value) return;
+                                    if (value === "ALL_EMPLOYEES") {
+                                        setAudience("ALL_EMPLOYEES");
+                                        setDepartmentId("");
+                                    } else {
+                                        setAudience("DEPARTMENT");
+                                        setDepartmentId(
+                                            value.slice("department:".length),
+                                        );
                                     }
                                 }}
                             >
@@ -236,7 +252,7 @@ export function AnnouncementForm({
                                 >
                                     <SelectValue placeholder="Select audience" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="max-h-64">
                                     {audienceItems.map((item) => (
                                         <SelectItem
                                             key={item.value}
@@ -247,65 +263,21 @@ export function AnnouncementForm({
                                     ))}
                                 </SelectContent>
                             </Select>
-                        </div>
-                    </div>
-                    {audience === "DEPARTMENT" && (
-                        <div className="space-y-2">
-                            <Label htmlFor="notice-department">
-                                Department
-                            </Label>
-                            <Select
-                                items={departmentItems}
-                                value={departmentId || null}
-                                onValueChange={(value) =>
-                                    setDepartmentId(value ?? "")
-                                }
-                                disabled={
-                                    departments.isPending || departments.isError
-                                }
-                            >
-                                <SelectTrigger
-                                    id="notice-department"
-                                    className="w-full"
-                                >
-                                    <SelectValue placeholder="Select a department" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {departmentItems.map((item) => (
-                                        <SelectItem
-                                            key={item.value}
-                                            value={item.value}
-                                        >
-                                            {item.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            {departments.isPending && (
+                                <p className="text-xs text-muted-foreground">
+                                    Loading departments…
+                                </p>
+                            )}
                             {departments.isError && (
                                 <p className="text-xs text-destructive">
-                                    Couldn’t load departments. Please try again.
+                                    Couldn’t load departments. All departments is still available.
                                 </p>
                             )}
                         </div>
-                    )}
-                    <div className="space-y-2">
-                        <Label htmlFor="notice-expiry">
-                            Expires (optional)
-                        </Label>
-                        <Input
-                            id="notice-expiry"
-                            type="datetime-local"
-                            value={expiry}
-                            onChange={(event) => setExpiry(event.target.value)}
-                            onClick={(event) =>
-                                event.currentTarget.showPicker()
-                            }
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Shown in your local time. After expiry, employees
-                            can no longer open the notice.
-                        </p>
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                        All departments includes employees without a department.
+                    </p>
                     <div className="space-y-3 rounded-xl border bg-muted/20 p-4">
                         <label className="flex cursor-pointer items-start gap-3 text-sm">
                             <input
@@ -367,15 +339,19 @@ export function AnnouncementForm({
                             type="button"
                             variant="outline"
                             onClick={onClose}
-                            disabled={save.isPending}
+                            disabled={busy}
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={save.isPending}>
-                            {save.isPending && (
+                        <Button type="submit" value="draft" disabled={busy}>
+                            {busy && (
                                 <LoaderCircle className="animate-spin" />
                             )}
                             {existing ? "Save changes" : "Create draft"}
+                        </Button>
+                        <Button type="submit" value="publish" disabled={busy}>
+                            {busy && <LoaderCircle className="animate-spin" />}
+                            Publish now
                         </Button>
                     </DialogFooter>
                 </form>

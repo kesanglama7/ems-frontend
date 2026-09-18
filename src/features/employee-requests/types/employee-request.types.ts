@@ -56,6 +56,10 @@ export interface EmployeeRequest {
   id: string;
   requestNumber: number;
   category: RequestCategory;
+  requestCategory?: { id: string; name: string } | null;
+  resourceId?: string | null;
+  resourceQuantity?: number | null;
+  resource?: { id: string; name: string } | null;
   subject: string;
   description: string;
   status: RequestStatus;
@@ -85,6 +89,7 @@ export interface EmployeeRequest {
 export interface RequestQuery {
   search?: string;
   category?: RequestCategory;
+  requestCategoryId?: string;
   status?: RequestStatus;
   priority?: RequestPriority;
   employeeId?: string;
@@ -116,7 +121,11 @@ export interface RequestSummaryResponse {
 }
 
 export interface CreateRequestPayload {
-  category: RequestCategory;
+  category?: RequestCategory;
+  requestCategoryId?: string;
+  resourceId?: string;
+  resourceQuantity?: number;
+  attachments?: File[];
   subject: string;
   description: string;
   priority?: RequestPriority;

@@ -1,7 +1,10 @@
+import { dateOfBirthField, genderField } from "./demographics.schema";
 import { z } from "zod";
 
 export const createEmployeeSchema =
   z.object({
+    dateOfBirth: dateOfBirthField,
+    gender: genderField,
     firstName: z
       .string()
       .trim()

@@ -1,9 +1,10 @@
 import type { UserRole } from "@/features/auth/types/auth.types";
 import type { Notification, NotificationCategory } from "./types";
-export const categoryLabels: Record<NotificationCategory, string> = { LEAVE: "Leave", REQUEST: "Requests", DOCUMENT: "Documents", ATTENDANCE: "Attendance", ANNOUNCEMENT: "Announcements" };
+export const categoryLabels: Record<NotificationCategory, string> = { RESOURCE: "Resources", LEAVE: "Leave", REQUEST: "Requests", DOCUMENT: "Documents", ATTENDANCE: "Attendance", ANNOUNCEMENT: "Announcements" };
 export function notificationHref(item: Pick<Notification, "entityType" | "entityId">, role: UserRole) {
   const root = role === "ADMIN" ? "/admin" : "/employee";
   switch (item.entityType) {
+    case "RESOURCE_ASSIGNMENT": return `${root}/resources`;
     case "ANNOUNCEMENT": return role === "EMPLOYEE" ? `/employee/announcements/${encodeURIComponent(item.entityId)}` : "/admin/announcements";
     case "EMPLOYEE_REQUEST": return `${root}/requests`;
     case "DOCUMENT": return `${root}/documents`;

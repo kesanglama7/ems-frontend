@@ -405,6 +405,8 @@ export function EmployeeProfilePage() {
                 }
               />
 
+              <ReadOnlyField label="Date of birth" value={formatDate(profile.dateOfBirth)} />
+              <ReadOnlyField label="Gender" value={profile.gender ? profile.gender.charAt(0) + profile.gender.slice(1).toLowerCase() : "Not specified"} />
               <ReadOnlyField
                 label="Date of joining"
                 value={formatDate(

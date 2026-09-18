@@ -7,13 +7,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { REQUEST_CATEGORIES, REQUEST_PRIORITIES, REQUEST_STATUSES } from "../constants/employee-request.constants";
+import { REQUEST_PRIORITIES, REQUEST_STATUSES } from "../constants/employee-request.constants";
 import { useAdminRequestSummary, useRequests } from "../hooks/use-employee-requests";
-import type { RequestCategory, RequestPriority, RequestQuery, RequestStatus } from "../types/employee-request.types";
+import type { RequestPriority, RequestQuery, RequestStatus } from "../types/employee-request.types";
 import { AdminRequestBoard } from "./admin-request-board";
 import { CreateRequestDialog } from "./create-request-dialog";
 import { RequestDetailDialog } from "./request-detail-dialog";
 import { RequestTable } from "./request-table";
+
+import { useRequestCategories } from "@/features/office/api";
 
 type ViewMode = "board" | "table";
 
@@ -40,7 +42,8 @@ function Filters({
   showStatus: boolean;
   onClear: () => void;
 }) {
-  const categoryLabel = category === "ALL" ? "All categories" : REQUEST_CATEGORIES.find((item) => item.value === category)?.label ?? category;
+  const categories = useRequestCategories();
+  const categoryLabel = category === "ALL" ? "All categories" : categories.data?.data.find(item => item.id === category)?.name ?? "Category";
   const statusLabel = status === "ALL" ? "All statuses" : REQUEST_STATUSES.find((item) => item.value === status)?.label ?? status;
   const priorityLabel = priority === "ALL" ? "All priorities" : REQUEST_PRIORITIES.find((item) => item.value === priority)?.label ?? priority;
   const hasFilters = Boolean(search.trim() || category !== "ALL" || priority !== "ALL" || (showStatus && status !== "ALL"));
@@ -70,7 +73,7 @@ function Filters({
                 <SelectTrigger id="request-category" className="h-10 w-full min-w-0"><SelectValue>{categoryLabel}</SelectValue></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">All categories</SelectItem>
-                  {REQUEST_CATEGORIES.map((item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}
+                  {categories.data?.data.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}{!item.isActive ? " (inactive)" : ""}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -169,7 +172,7 @@ function AdminRequestsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const baseQuery: RequestQuery = {
     search: deferredSearch.trim() || undefined,
-    category: category === "ALL" ? undefined : category as RequestCategory,
+    requestCategoryId: category === "ALL" ? undefined : category,
     priority: priority === "ALL" ? undefined : priority as RequestPriority,
     sortBy: "createdAt",
     sortOrder: "desc",
@@ -251,7 +254,7 @@ function EmployeeRequestsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const query = useRequests(false, {
     search: deferredSearch.trim() || undefined,
-    category: category === "ALL" ? undefined : category as RequestCategory,
+    requestCategoryId: category === "ALL" ? undefined : category,
     status: status === "ALL" ? undefined : status as RequestStatus,
     priority: priority === "ALL" ? undefined : priority as RequestPriority,
     page,

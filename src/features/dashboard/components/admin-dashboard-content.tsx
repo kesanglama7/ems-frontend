@@ -1,4 +1,5 @@
 "use client";
+import { UpcomingBirthdays } from "@/features/office/birthdays";
 
 import { StatCard } from "./stat-card";
 import { DashboardSkeleton } from "./dashboard-skeleton";
@@ -127,6 +128,7 @@ export function AdminDashboardContent() {
           />
         </div>
       </section>
+      <UpcomingBirthdays />
     </main>
   );
 }

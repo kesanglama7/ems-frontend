@@ -146,7 +146,7 @@ export default function EmployeeAttendancePage() {
                     </Badge>
                   </TableCell>
                   <TableCell>{formatTime(record.checkInAt)}</TableCell>
-                  <TableCell>{formatTime(record.checkOutAt)}</TableCell>
+                  <TableCell>{formatTime(record.checkOutAt)}{record.earlyCheckoutMinutes > 0 && <p className="text-xs font-medium text-amber-700">Left {record.earlyCheckoutMinutes} min early</p>}</TableCell>
                   <TableCell>
                     {record.isLate ? (
                       <span className="text-destructive font-medium">
@@ -231,7 +231,7 @@ export default function EmployeeAttendancePage() {
                 <div className="rounded-lg border bg-muted/30 p-3">
                   <p className="text-xs text-muted-foreground">Check Out</p>
                   <p className="font-semibold">
-                    {formatTime(selectedAttendance.checkOutAt)}
+                    {formatTime(selectedAttendance.checkOutAt)}{selectedAttendance.earlyCheckoutMinutes > 0 && <p className="text-xs text-amber-700">Left {selectedAttendance.earlyCheckoutMinutes} min early</p>}
                   </p>
                 </div>
                 <div className="rounded-lg border bg-muted/30 p-3">

@@ -1,3 +1,4 @@
+import type { Gender } from "@/features/office/api";
 import type {
   UserRole,
   UserStatus,
@@ -24,6 +25,8 @@ export interface EmployeeListItem {
   lastName: string;
   phone: string | null;
   jobTitle: string | null;
+  dateOfBirth: string | null;
+  gender: Gender | null;
   dateOfJoining: string | null;
   profileImageUrl: string | undefined;
   departmentId: string | null;
@@ -63,6 +66,8 @@ export interface CreateEmployeePayload {
   workMode: UserWorkMode;
   jobTitle?: string;
   departmentId?: string;
+  dateOfBirth?: string;
+  gender?: Gender;
   dateOfJoining?: string;
 }
 
@@ -102,6 +107,8 @@ export interface EmployeeDetails {
   lastName: string;
   phone: string | null;
   jobTitle: string | null;
+  dateOfBirth: string | null;
+  gender: Gender | null;
   dateOfJoining: string | null;
   profileImagePath: string | null;
   workMode: UserWorkMode;
@@ -124,6 +131,8 @@ export interface UpdateEmployeePayload {
   phone?: string;
   jobTitle?: string;
   departmentId?: string | null;
+  dateOfBirth?: string | null;
+  gender?: Gender | null;
   dateOfJoining?: string | null;
   workMode?: UserWorkMode;
 }

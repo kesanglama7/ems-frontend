@@ -8,6 +8,8 @@ export type LeaveDuration = "FULL_DAY" | "FIRST_HALF" | "SECOND_HALF";
 export type LeaveSource = "EMPLOYEE" | "ADMIN";
 
 export interface LeaveType {
+  audience: "ALL" | "SELECTED";
+  eligibleGender: "MALE" | "FEMALE" | "OTHER" | null;
   id: string;
   name: string;
   description: string | null;
@@ -30,6 +32,8 @@ export interface LeaveTypeResponse {
   data: LeaveType;
 }
 export interface CreateLeaveTypePayload {
+  audience?: "ALL" | "SELECTED";
+  eligibleGender?: "MALE" | "FEMALE" | "OTHER" | null;
   name: string;
   description?: string;
   yearlyAllowance?: number;
@@ -180,8 +184,8 @@ export interface AdminLeaveBalance {
     allowHalfDay: boolean;
   };
   totalDays: number | null;
-  usedDays: number;
-  pendingDays: number;
+  usedDays: number | null;
+  pendingDays: number | null;
   availableDays: number | null;
 }
 

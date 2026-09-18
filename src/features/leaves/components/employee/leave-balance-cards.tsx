@@ -1,4 +1,5 @@
 "use client";
+import { QueryFeedback, EmptyState } from "@/components/shared/admin/shared";
 
 import { Info, Infinity, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import { useMyLeaveBalance } from "../../hooks/use-my-leaves";
 
 export function LeaveBalanceCards() {
   const year = new Date().getFullYear();
-  const { data, isPending } = useMyLeaveBalance(year);
+  const { data, isPending, isError, refetch } = useMyLeaveBalance(year);
 
   if (isPending) {
     return (
@@ -30,6 +31,7 @@ export function LeaveBalanceCards() {
     );
   }
 
+  if (isError) return <QueryFeedback pending={false} error retry={refetch} />;
   const balances = data?.data.balances ?? [];
 
   return (
@@ -43,6 +45,7 @@ export function LeaveBalanceCards() {
           </h2>
         </div>
 
+        {!balances.length && <EmptyState>No eligible leave types are assigned yet. Contact your administrator.</EmptyState>}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {balances.map((balance) => {
             const hasUsedOrPending =
@@ -141,7 +144,7 @@ export function LeaveBalanceCards() {
                           </p>
                         ) : (
                           <p className="text-xs text-muted-foreground">
-                            No leaves taken yet this year
+                            No balance limit applies
                           </p>
                         )}
                       </div>
