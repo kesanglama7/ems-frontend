@@ -39,3 +39,10 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ## Notifications
 
 See [NOTIFICATIONS.md](NOTIFICATIONS.md) for deployment variables, inbox/API behavior, Firebase integration, and verification. See [CHANGES.md](CHANGES.md) for the complete changed-file list.
+
+## Notifications
+
+See [NOTIFICATIONS.md](NOTIFICATIONS.md) for deployment variables, inbox/API behavior, Firebase integration, and verification. See [CHANGES.md](CHANGES.md) for the complete changed-file list.
+## Notifications
+
+See [NOTIFICATIONS.md](NOTIFICATIONS.md) for deployment variables, inbox/API behavior, Firebase integration, and verification. See [CHANGES.md](CHANGES.md) for the complete changed-file list.
