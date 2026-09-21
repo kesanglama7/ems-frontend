@@ -82,6 +82,7 @@ export interface Attachment {
 export interface LeaveAssignment {
   employeeId: string;
   leaveTypeId: string;
+  assignedDays: number | string;
   employee: {
     id: string;
     firstName: string;

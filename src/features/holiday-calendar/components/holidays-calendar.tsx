@@ -149,7 +149,7 @@ export function HolidaysCalendar({ admin = false }: { admin?: boolean }) {
         </aside>
 
         <section className="space-y-6">
-
+          <h1 className="text-2xl font-semibold tracking-tight">Upcoming Holidays</h1>
 
           <QueryFeedback
             pending={query.isPending}

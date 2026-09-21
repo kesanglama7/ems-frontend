@@ -1,8 +1,9 @@
 import { api } from "@/lib/api";
 import type {
   AssignmentLeaveType,
-  AssignmentPayload,
+  AssignLeavePayload,
   AssignmentResponse,
+  RemoveAssignmentPayload,
 } from "../types/leave-assignment.types";
 export async function getAssignmentLeaveTypes() {
   return (
@@ -13,7 +14,7 @@ export async function getAssignmentLeaveTypes() {
 }
 export async function assignLeaveEmployees(
   leaveTypeId: string,
-  payload: AssignmentPayload,
+  payload: AssignLeavePayload,
 ) {
   return (
     await api.post<AssignmentResponse>(
@@ -24,7 +25,7 @@ export async function assignLeaveEmployees(
 }
 export async function removeLeaveEmployees(
   leaveTypeId: string,
-  payload: AssignmentPayload,
+  payload: RemoveAssignmentPayload,
 ) {
   return (
     await api.delete<AssignmentResponse>(

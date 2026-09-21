@@ -243,7 +243,7 @@ export function CreateRequestDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="request-attachments">
-              Bills / photos (optional)
+              Photo (optional)
             </Label>
             <Input
               id="request-attachments"
@@ -269,8 +269,7 @@ export function CreateRequestDialog({
               }}
             />
             <p className="text-xs text-muted-foreground">
-              Up to 10 photos, 5 MB each. Attach receipts for reimbursement
-              requests.
+              Upto 5 photos, 200kb each for compressing image use this <a href="http://image.pi7.org/compress-image-to-200kb" target="_blank" rel="noopener noreferrer">http://image.pi7.org/compress-image-to-200kb</a>
             </p>
             {fileError && (
               <p role="alert" className="text-sm text-destructive">

@@ -1,18 +1,18 @@
 "use client";
 import Link from "next/link";
 import { formatDistanceToNowStrict } from "date-fns";
-import { CalendarDays, Check, Clock3, FileText, Megaphone, MessageSquare, Trash2 } from "lucide-react";
+import { CalendarDays, Check, Clock3, FileText, Megaphone, MessageSquare} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth.store";
-import { useDeleteNotification, useMarkNotificationRead } from "./hooks";
+import { useMarkNotificationRead } from "./hooks";
 import { categoryLabels, notificationHref } from "./notification-utils";
 import type { Notification } from "./types";
 const icons = { RESOURCE: MessageSquare, LEAVE: CalendarDays, REQUEST: MessageSquare, DOCUMENT: FileText, ATTENDANCE: Clock3, ANNOUNCEMENT: Megaphone };
 export function NotificationItem({ item, onNavigate, compact = false }: { item: Notification; onNavigate?: () => void; compact?: boolean }) {
   const role = useAuthStore((s) => s.user?.role) ?? "EMPLOYEE";
   const read = useMarkNotificationRead();
-  const remove = useDeleteNotification();
+  // const remove = useDeleteNotification();
   const Icon = icons[item.category] ?? MessageSquare;
   const unread = !item.readAt;
   return (
@@ -33,7 +33,7 @@ export function NotificationItem({ item, onNavigate, compact = false }: { item: 
       </div>
       <div className="flex shrink-0 flex-col gap-1">
         {unread && <Button variant="ghost" size="icon-sm" aria-label={`Mark ${item.title} as read`} title="Mark as read" disabled={read.isPending} onClick={() => read.mutate(item.id)}><Check className="size-3.5" /></Button>}
-        <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" aria-label={`Delete ${item.title}`} title="Delete notification" disabled={remove.isPending} onClick={() => remove.mutate(item.id)}><Trash2 className="size-3.5" /></Button>
+        {/* <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" aria-label={`Delete ${item.title}`} title="Delete notification" disabled={remove.isPending} onClick={() => remove.mutate(item.id)}><Trash2 className="size-3.5" /></Button> */}
       </div>
     </article>
   );

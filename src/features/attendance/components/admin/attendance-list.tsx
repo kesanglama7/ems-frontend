@@ -1052,13 +1052,12 @@ export default function AdminAttendanceLists() {
                       <TableCell>
                         {formatTime(
                           record.checkOutAt,
-                        )}{record.earlyCheckoutMinutes > 0 && <p className="text-xs font-medium text-amber-700">Left {record.earlyCheckoutMinutes} min early</p>}
+                        )}{record.earlyCheckoutMinutes > 0 && <p className="text-xs font-medium text-amber-700">Left {formatMinutes(record.earlyCheckoutMinutes)} early</p>}
                       </TableCell>
 
                       <TableCell>
                         {record.isLate ? (
                           <span className="font-medium text-destructive">
-                            +
                             {
                               formatMinutes(record.lateMinutes)
                             }
@@ -1375,7 +1374,7 @@ export default function AdminAttendanceLists() {
                     {formatTime(
                       detailData.data
                         .checkOutAt,
-                    )}{detailData.data.earlyCheckoutMinutes > 0 && <span className="block text-xs text-amber-700">Left {detailData.data.earlyCheckoutMinutes} min early</span>}
+                    )}{detailData.data.earlyCheckoutMinutes > 0 && <span className="block text-xs text-amber-700">Left {formatMinutes(detailData.data.earlyCheckoutMinutes)} early</span>}
                   </p>
                 </div>
 
@@ -1456,7 +1455,6 @@ export default function AdminAttendanceLists() {
                       </p>
 
                       <p className="font-semibold text-green-700 dark:text-green-400">
-                        +
                         {
                           formatMinutes(
                             detailData

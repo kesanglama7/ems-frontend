@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
 import { UserPlus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,10 @@ import EmployeeSearchSelect from "@/components/shared/admin/employee-search-sele
 import { api } from "@/lib/api";
 import { useConfirmDialogStore } from "@/stores/confirm-dialog.store";
 import { useOfficeMutation, useOfficeQuery, type LeaveAssignment } from "./api";
-import { QueryFeedback, EmptyState } from "../../components/shared/admin/shared";
+import {
+  QueryFeedback,
+  EmptyState,
+} from "../../components/shared/admin/shared";
 import type { LeaveType } from "@/features/leaves/types/leave.types";
 
 export function LeaveAssignmentButton({ type }: { type: LeaveType }) {
@@ -42,6 +45,7 @@ function LeaveAssignments({
   onClose: () => void;
 }) {
   const [employeeId, setEmployeeId] = useState("");
+  const [days, setDays] = useState(1);
   const confirm = useConfirmDialogStore((s) => s.confirm);
   const query = useOfficeQuery<LeaveAssignment[]>(
     "leave-assignments",
@@ -50,12 +54,17 @@ function LeaveAssignments({
   const groups = ["leave-assignments", "leaves"];
   const assign = useOfficeMutation(
     (id: string) =>
-      api.post(`/leave-types/${type.id}/assignments`, { employeeId: id }),
+      api.post(`/leave-types/${type.id}/assignments`, {
+        assignments: [{ employeeId: id, days }],
+      }),
     "Employee assigned.",
     groups,
   );
   const remove = useOfficeMutation(
-    (id: string) => api.delete(`/leave-types/${type.id}/assignments/${id}`),
+    (id: string) =>
+      api.delete(`/leave-types/${type.id}/assignments`, {
+        data: { employeeIds: [id] },
+      }),
     "Leave access removed.",
     groups,
   );
@@ -87,26 +96,38 @@ function LeaveAssignments({
             onChange={setEmployeeId}
             disabled={assign.isPending}
           />
+          <label
+            htmlFor="legacy-leave-allocation"
+            className="text-sm font-medium"
+          >
+            Days allocated
+          </label>
+          <Input
+            id="legacy-leave-allocation"
+            type="number"
+            min={type.allowHalfDay ? 0.5 : 1}
+            max={365}
+            step={type.allowHalfDay ? 0.5 : 1}
+            value={days}
+            onChange={(event) => setDays(event.target.valueAsNumber)}
+            disabled={assign.isPending}
+          />
           <Button
-            disabled={!employeeId || assign.isPending}
+            disabled={
+              !employeeId ||
+              !Number.isFinite(days) ||
+              days < (type.allowHalfDay ? 0.5 : 1) ||
+              (!type.allowHalfDay && !Number.isInteger(days)) ||
+              assign.isPending
+            }
             onClick={() => void submit()}
           >
             {assign.isPending ? "Assigning…" : "Grant access"}
           </Button>
           <p className="text-xs text-muted-foreground">
-            Default allocation:{" "}
-            {type.hasLimitedBalance
-              ? `${type.yearlyAllowance} days`
-              : "Unlimited"}
-            . For earned compensatory days, adjust the employee&apos;s balance
-            after assigning.
+            This allocation is stored specifically for the selected employee.
+            Assigning them again updates their current-year total.
           </p>
-          <Link
-            className="text-sm text-primary underline"
-            href="/admin/leaves/balance"
-          >
-            Manage leave balances
-          </Link>
         </div>
         <QueryFeedback
           pending={query.isPending}
@@ -126,7 +147,7 @@ function LeaveAssignments({
                       {a.employee.firstName} {a.employee.lastName}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {a.employee.employeeCode}
+                      {a.employee.employeeCode} · {Number(a.assignedDays)} days
                     </p>
                   </div>
                   <Button

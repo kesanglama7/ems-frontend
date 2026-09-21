@@ -45,19 +45,8 @@ import type { Department } from "../types/department.types";
 import { DepartmentDetailsDialog } from "./department-details-dialog";
 import { DepartmentFormDialog } from "./department-form-dialog";
 import { useDepartments } from "../hooks/use-departments";
+import { formatOfficeDate } from "@/lib/general";
 
-function formatDate(
-  value: string,
-) {
-  return new Intl.DateTimeFormat(
-    "en",
-    {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    },
-  ).format(new Date(value));
-}
 
 function DepartmentListSkeleton() {
   return (
@@ -452,7 +441,7 @@ export function AdminDepartmentList() {
                           <Badge
                             variant={
                               department.isActive
-                                ? "default"
+                                ? "active"
                                 : "secondary"
                             }
                           >
@@ -463,7 +452,7 @@ export function AdminDepartmentList() {
                         </TableCell>
 
                         <TableCell>
-                          {formatDate(
+                          {formatOfficeDate(
                             department.createdAt,
                           )}
                         </TableCell>
@@ -564,7 +553,7 @@ export function AdminDepartmentList() {
 
                           <p className="text-muted-foreground mt-0.5 text-xs">
                             Created{" "}
-                            {formatDate(
+                            {formatOfficeDate(
                               department.createdAt,
                             )}
                           </p>
@@ -574,7 +563,7 @@ export function AdminDepartmentList() {
                       <Badge
                         variant={
                           department.isActive
-                            ? "default"
+                            ? "active"
                             : "secondary"
                         }
                       >

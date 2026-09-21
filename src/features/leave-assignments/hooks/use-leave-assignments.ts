@@ -27,9 +27,22 @@ export function useAssignmentLeaveTypes() {
 export function useManageLeaveAssignments() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ leaveTypeId, employeeIds, action }: AssignmentVariables) =>
+    mutationFn: ({
+      leaveTypeId,
+      employeeIds,
+      days,
+      assignments,
+      action,
+    }: AssignmentVariables) =>
       action === "assign"
-        ? assignLeaveEmployees(leaveTypeId, { employeeIds })
+        ? assignLeaveEmployees(leaveTypeId, {
+            assignments:
+              assignments ??
+              employeeIds.map((employeeId) => ({
+                employeeId,
+                days: days ?? 1,
+              })),
+          })
         : removeLeaveEmployees(leaveTypeId, { employeeIds }),
     onSuccess: (response) => {
       toast.success(response.message);

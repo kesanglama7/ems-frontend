@@ -23,6 +23,7 @@ interface Props {
   hasMore?: boolean;
   loadingMore?: boolean;
   loadMore: () => unknown;
+  onEmployeeToggle?: (employee: AssignedEmployee, checked: boolean) => void;
 }
 export function EmployeeMultiSelect({
   value,
@@ -37,6 +38,7 @@ export function EmployeeMultiSelect({
   hasMore,
   loadingMore,
   loadMore,
+  onEmployeeToggle,
 }: Props) {
   const [names, setNames] = useState<Record<string, string>>({});
   function toggle(employee: AssignedEmployee, checked: boolean) {
@@ -47,6 +49,7 @@ export function EmployeeMultiSelect({
       }));
       onChange([...value, employee.id]);
     } else onChange(value.filter((id) => id !== employee.id));
+    onEmployeeToggle?.(employee, checked);
   }
   return (
     <div className="space-y-2">

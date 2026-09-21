@@ -239,7 +239,9 @@ export function LeaveTypeList() {
                       <TableCell>
                         <p>
                           {leaveType.hasLimitedBalance
-                            ? `${leaveType.yearlyAllowance} days`
+                            ? leaveType.audience === "SELECTED"
+                              ? "Individual allocation"
+                              : `${leaveType.yearlyAllowance} days`
                             : "Unlimited"}
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">
@@ -320,7 +322,9 @@ export function LeaveTypeList() {
 
                   <p className="mt-2 text-xs text-muted-foreground">
                     {leaveType.hasLimitedBalance
-                      ? `${leaveType.yearlyAllowance} days`
+                      ? leaveType.audience === "SELECTED"
+                        ? "Individual allocation"
+                        : `${leaveType.yearlyAllowance} days`
                       : "Unlimited"}{" "}
                     ·{" "}
                     {leaveType.eligibleGender

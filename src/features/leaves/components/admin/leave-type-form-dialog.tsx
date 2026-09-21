@@ -81,6 +81,10 @@ export function LeaveTypeFormDialog({
     control: form.control,
     name: "hasLimitedBalance",
   });
+  const audience = useWatch({
+    control: form.control,
+    name: "audience",
+  });
 
   useEffect(() => {
     if (!open) {
@@ -125,7 +129,8 @@ export function LeaveTypeFormDialog({
             values.eligibleGender === "ALL" ? null : values.eligibleGender,
           name: values.name.trim(),
           description: values.description.trim(),
-          yearlyAllowance: values.yearlyAllowance,
+          yearlyAllowance:
+            values.audience === "SELECTED" ? 0 : values.yearlyAllowance,
           ...(leaveType &&
           values.hasLimitedBalance === leaveType.hasLimitedBalance
             ? {}
@@ -148,7 +153,8 @@ export function LeaveTypeFormDialog({
             values.eligibleGender === "ALL" ? null : values.eligibleGender,
           name: values.name.trim(),
           description: description || undefined,
-          yearlyAllowance: values.yearlyAllowance,
+          yearlyAllowance:
+            values.audience === "SELECTED" ? 0 : values.yearlyAllowance,
           hasLimitedBalance: values.hasLimitedBalance,
           allowHalfDay: values.allowHalfDay,
           isEmployeeRequestable: values.isEmployeeRequestable,
@@ -328,45 +334,51 @@ export function LeaveTypeFormDialog({
                 )}
               />
 
-            <Controller
-              name="hasLimitedBalance"
-              control={form.control}
-              render={({ field }) => (
-                <Field orientation="horizontal">
-                  <div className="flex-1">
-                    <FieldLabel>Limited yearly balance</FieldLabel>
-                  </div>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </Field>
-              )}
-            />
-            {limited && (
               <Controller
-                name="yearlyAllowance"
+                name="hasLimitedBalance"
                 control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel>Days per year</FieldLabel>
-                    <Input
-                      {...field}
-                      type="number"
-                      min="0"
-                      step="0.5"
-                      onChange={(event) =>
-                        field.onChange(event.target.valueAsNumber)
-                      }
-                      aria-invalid={fieldState.invalid}
+                render={({ field }) => (
+                  <Field orientation="horizontal">
+                    <div className="flex-1">
+                      <FieldLabel>Limited yearly balance</FieldLabel>
+                    </div>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
                     />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
                   </Field>
                 )}
               />
-            )}
+              {limited && audience === "ALL" && (
+                <Controller
+                  name="yearlyAllowance"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>Days per year</FieldLabel>
+                      <Input
+                        {...field}
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        onChange={(event) =>
+                          field.onChange(event.target.valueAsNumber)
+                        }
+                        aria-invalid={fieldState.invalid}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+              )}
+              {limited && audience === "SELECTED" && (
+                <p className="rounded-lg border bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">
+                  Days are assigned individually after creating this leave type.
+                  For example, Ram can receive 4 days while Sita receives 2.
+                </p>
+              )}
             </div>
             <hr className="border-t" />
             <Controller

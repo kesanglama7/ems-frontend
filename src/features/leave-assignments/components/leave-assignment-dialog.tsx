@@ -2,6 +2,7 @@
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +50,7 @@ export function LeaveAssignmentDialog({
       employeeIds: [...employeeIds],
       leaveTypeId: "",
       action: "assign",
+      days: 1,
     },
   });
   const action = useWatch({ control: form.control, name: "action" });
@@ -65,6 +67,16 @@ export function LeaveAssignmentDialog({
     if (!selectedType) {
       form.setError("leaveTypeId", {
         message: "Choose an available leave type.",
+      });
+      return;
+    }
+    if (
+      values.action === "assign" &&
+      !selectedType.allowHalfDay &&
+      !Number.isInteger(values.days)
+    ) {
+      form.setError("days", {
+        message: "This leave type only supports whole-day allocations.",
       });
       return;
     }
@@ -187,9 +199,42 @@ export function LeaveAssignmentDialog({
               )}
             />
           )}
+          {action === "assign" && (
+            <Controller
+              name="days"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="leave-assignment-days">
+                    Days for each selected employee
+                  </FieldLabel>
+                  <Input
+                    id="leave-assignment-days"
+                    type="number"
+                    min={selectedType?.allowHalfDay === false ? 1 : 0.5}
+                    max={365}
+                    step={selectedType?.allowHalfDay === false ? 1 : 0.5}
+                    value={Number.isFinite(field.value) ? field.value : ""}
+                    onBlur={field.onBlur}
+                    onChange={(event) =>
+                      field.onChange(event.target.valueAsNumber)
+                    }
+                    disabled={mutation.isPending}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  <FieldDescription>
+                    This bulk action gives the same allocation to everyone in
+                    the current selection. You can edit employees individually
+                    from the leave type page.
+                  </FieldDescription>
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
+              )}
+            />
+          )}
           <p className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
             {action === "assign"
-              ? "Existing assignments and balances are preserved. If any selected employee is ineligible, the entire request is rejected."
+              ? "New assignments are created and existing employees are updated to this allocation. Used and pending days are protected. If any employee is ineligible, nobody is changed."
               : "Pending leave must be reviewed before removing access. Historical balances and leave records are preserved. If any employee has pending leave, nobody is removed."}
           </p>
           {mutation.isError && (

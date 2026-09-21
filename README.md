@@ -40,6 +40,26 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 See [NOTIFICATIONS.md](NOTIFICATIONS.md) for deployment variables, inbox/API behavior, Firebase integration, and verification. See [CHANGES.md](CHANGES.md) for the complete changed-file list.
 
+## Per-employee compensatory leave allocations
+
+For a limited leave type with the `SELECTED` audience, open **Manage
+employees** on the Leave Types page. The dialog accepts a separate day amount
+for every selected employee and can update an existing assignment.
+
+```json
+{
+  "assignments": [
+    { "employeeId": "<ram-id>", "days": 4 },
+    { "employeeId": "<sita-id>", "days": 2 }
+  ]
+}
+```
+
+Bulk assignment from the Employees page uses the same API contract but applies
+one entered allocation to everyone selected. Notification cards, foreground
+toasts, and foreground browser notifications display the backend-provided
+`title` and `message` directly.
+
 ## Notifications
 
 See [NOTIFICATIONS.md](NOTIFICATIONS.md) for deployment variables, inbox/API behavior, Firebase integration, and verification. See [CHANGES.md](CHANGES.md) for the complete changed-file list.

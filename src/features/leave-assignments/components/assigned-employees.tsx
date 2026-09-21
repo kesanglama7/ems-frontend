@@ -95,7 +95,7 @@ export function AssignedEmployees({ type }: { type: AssignmentLeaveType }) {
             className="flex flex-wrap gap-1.5"
             aria-label={`Employees assigned to ${type.name}`}
           >
-            {visible.map(({ employee }) => {
+            {visible.map(({ employee, assignedDays }) => {
               const name = `${employee.firstName} ${employee.lastName}`.trim();
               return (
                 <li
@@ -113,7 +113,7 @@ export function AssignedEmployees({ type }: { type: AssignmentLeaveType }) {
                   >
                     {name}{" "}
                     <span className="text-muted-foreground">
-                      · {employee.employeeCode}
+                      · {employee.employeeCode} · {Number(assignedDays)} days
                     </span>
                   </span>
                   <Button

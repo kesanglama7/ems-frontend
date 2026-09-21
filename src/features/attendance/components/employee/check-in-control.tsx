@@ -121,9 +121,6 @@ function getCurrentLocation(): Promise<LocationState> {
 }
 
 export const CheckInControl = () => {
-  // ---------------------------------------------------------------------------
-  // Queries
-  // ---------------------------------------------------------------------------
 
   const {
     data: todayResponse,
@@ -135,16 +132,10 @@ export const CheckInControl = () => {
     isLoading: isLoadingProfile,
   } = useMyEmployeeProfile();
 
-  // ---------------------------------------------------------------------------
-  // Mutations
-  // ---------------------------------------------------------------------------
 
   const checkIn = useCheckIn();
   const checkOut = useCheckOut();
 
-  // ---------------------------------------------------------------------------
-  // State
-  // ---------------------------------------------------------------------------
 
   const [
     requestingLocation,
@@ -155,10 +146,6 @@ export const CheckInControl = () => {
     locationError,
     setLocationError,
   ] = useState<string | null>(null);
-
-  // ---------------------------------------------------------------------------
-  // Attendance
-  // ---------------------------------------------------------------------------
 
   const attendance =
     todayResponse?.data.attendance;
@@ -176,18 +163,6 @@ export const CheckInControl = () => {
   const isCheckedOut =
     !!attendance?.checkOutAt;
 
-  // ---------------------------------------------------------------------------
-  // Work mode
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Before check-in:
-   * attendance may not exist yet, so use profile.workMode.
-   *
-   * After check-in:
-   * use workModeSnapshot because this represents the
-   * work mode that was recorded for this attendance.
-   */
   const workMode =
     attendance?.workModeSnapshot ??
     profile?.workMode;
@@ -195,18 +170,10 @@ export const CheckInControl = () => {
   const isOnField =
     workMode === "ON_FIELD";
 
-  // ---------------------------------------------------------------------------
-  // Geolocation support
-  // ---------------------------------------------------------------------------
-
   const hasGeolocation =
     typeof navigator !==
       "undefined" &&
     "geolocation" in navigator;
-
-  // ---------------------------------------------------------------------------
-  // Location helper
-  // ---------------------------------------------------------------------------
 
   async function getLocationPayload(): Promise<LocationPayload> {
     const currentLocation =
@@ -224,17 +191,9 @@ export const CheckInControl = () => {
     };
   }
 
-  // ---------------------------------------------------------------------------
-  // Check In
-  // ---------------------------------------------------------------------------
-
   async function handleCheckIn() {
     setLocationError(null);
 
-    /**
-     * Remote employees do not need
-     * location information.
-     */
     if (!isOnField) {
       console.log(
         "Check-in payload:",
@@ -246,10 +205,6 @@ export const CheckInControl = () => {
       return;
     }
 
-    /**
-     * ON_FIELD employees must provide
-     * their current location.
-     */
     try {
       setRequestingLocation(true);
 
@@ -276,17 +231,9 @@ export const CheckInControl = () => {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Check Out
-  // ---------------------------------------------------------------------------
-
   async function handleCheckOut() {
     setLocationError(null);
 
-    /**
-     * Remote attendance does not
-     * require GPS coordinates.
-     */
     if (!isOnField) {
       console.log(
         "Check-out payload:",
@@ -297,13 +244,6 @@ export const CheckInControl = () => {
 
       return;
     }
-
-    /**
-     * Request a NEW location when checking out.
-     *
-     * Do not reuse check-in coordinates because
-     * the employee may have moved.
-     */
     try {
       setRequestingLocation(true);
 
@@ -330,10 +270,6 @@ export const CheckInControl = () => {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Loading
-  // ---------------------------------------------------------------------------
-
   if (
     isLoadingAttendance ||
     isLoadingProfile
@@ -355,10 +291,6 @@ export const CheckInControl = () => {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
-
   return (
     <Card>
       <CardHeader>
@@ -373,7 +305,6 @@ export const CheckInControl = () => {
         {closure && <div className="rounded-lg border bg-muted p-3 text-sm">Office closed today: {closure.name}. Check-in is unavailable. An existing attendance session can still be checked out.</div>}
         {todayLeave?.isOnLeave && <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-200">You are on {todayLeave.leaveType?.name ?? "approved leave"} today{todayLeave.duration && todayLeave.duration !== "FULL_DAY" ? ` (${todayLeave.duration.replaceAll("_", " ").toLowerCase()})` : ""}. {canCheckIn ? "Half-day attendance is still available." : "Check-in is disabled for this full-day leave."}</div>}
         {/* Attendance information */}
-
         {attendance ? (
           <>
             {/* Status */}
@@ -417,9 +348,8 @@ export const CheckInControl = () => {
                 >
                   Late{" "}
                   {
-                    attendance.lateMinutes
+                    formatMinutes(attendance.lateMinutes)
                   }
-                  min
                 </Badge>
               )}
 
@@ -472,7 +402,7 @@ export const CheckInControl = () => {
                 <p className="font-semibold">
                   {formatTime(
                     attendance.checkOutAt,
-                  )}{attendance.earlyCheckoutMinutes > 0 && <span className="block text-xs text-amber-700">Left {attendance.earlyCheckoutMinutes} min early</span>}
+                  )}{attendance.earlyCheckoutMinutes > 0 && <span className="block text-xs text-amber-700">Left {formatMinutes(attendance.earlyCheckoutMinutes)} min early</span>}
                 </p>
               </div>
 

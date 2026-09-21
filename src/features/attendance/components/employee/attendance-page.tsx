@@ -32,22 +32,8 @@ import {
   ATTENDANCE_STATUS_LABELS,
   ATTENDANCE_STATUS_COLORS,
 } from "@/features/attendance/constants/attendance.constants";
-import { getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth, getTodayDate } from "@/lib/general";
+import { formatMinutes, formatTime, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth, getTodayDate } from "@/lib/general";
 
-function formatTime(dateStr: string | null): string {
-  if (!dateStr) return "-";
-  return new Date(dateStr).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function formatMinutes(minutes: number | null): string {
-  if (minutes === null) return "-";
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
 
 export default function EmployeeAttendancePage() {
   const [fromDate, setFromDate] = useState(getFirstDayOfCurrentMonth());
@@ -146,11 +132,11 @@ export default function EmployeeAttendancePage() {
                     </Badge>
                   </TableCell>
                   <TableCell>{formatTime(record.checkInAt)}</TableCell>
-                  <TableCell>{formatTime(record.checkOutAt)}{record.earlyCheckoutMinutes > 0 && <p className="text-xs font-medium text-amber-700">Left {record.earlyCheckoutMinutes} min early</p>}</TableCell>
+                  <TableCell>{formatTime(record.checkOutAt)}{record.earlyCheckoutMinutes > 0 && <p className="text-xs font-medium text-amber-700">Left {formatMinutes(record.earlyCheckoutMinutes)} early</p>}</TableCell>
                   <TableCell>
                     {record.isLate ? (
                       <span className="text-destructive font-medium">
-                        +{record.lateMinutes}min
+                        {formatMinutes(record.lateMinutes)}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">-</span>
@@ -209,7 +195,7 @@ export default function EmployeeAttendancePage() {
                 </Badge>
                 {selectedAttendance.isLate && (
                   <Badge variant="destructive" className="gap-1">
-                    Late {selectedAttendance.lateMinutes}min
+                    Late {formatMinutes(selectedAttendance.lateMinutes)}
                   </Badge>
                 )}
                 {selectedAttendance.workModeSnapshot === "ON_FIELD" && (
@@ -231,7 +217,7 @@ export default function EmployeeAttendancePage() {
                 <div className="rounded-lg border bg-muted/30 p-3">
                   <p className="text-xs text-muted-foreground">Check Out</p>
                   <p className="font-semibold">
-                    {formatTime(selectedAttendance.checkOutAt)}{selectedAttendance.earlyCheckoutMinutes > 0 && <p className="text-xs text-amber-700">Left {selectedAttendance.earlyCheckoutMinutes} min early</p>}
+                    {formatTime(selectedAttendance.checkOutAt)}{selectedAttendance.earlyCheckoutMinutes > 0 && <p className="text-xs text-amber-700">Left {formatMinutes(selectedAttendance.earlyCheckoutMinutes)} early</p>}
                   </p>
                 </div>
                 <div className="rounded-lg border bg-muted/30 p-3">
@@ -254,7 +240,7 @@ export default function EmployeeAttendancePage() {
                   <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
                     <p className="text-xs text-destructive">Late</p>
                     <p className="font-semibold text-destructive">
-                      +{selectedAttendance.lateMinutes}min
+                      {formatMinutes(selectedAttendance.lateMinutes)}
                     </p>
                   </div>
                 )}
@@ -262,7 +248,7 @@ export default function EmployeeAttendancePage() {
                   <div className="rounded-lg border bg-muted/30 p-3">
                     <p className="text-xs text-muted-foreground">Early In</p>
                     <p className="font-semibold">
-                      {selectedAttendance.earlyMinutes}min
+                      {formatMinutes(selectedAttendance.earlyMinutes)}
                     </p>
                   </div>
                 )}
@@ -270,7 +256,7 @@ export default function EmployeeAttendancePage() {
                   <div className="rounded-lg border bg-muted/30 p-3">
                     <p className="text-xs text-muted-foreground">After Hours</p>
                     <p className="font-semibold">
-                      {selectedAttendance.afterHoursMinutes}min
+                      {formatMinutes(selectedAttendance.afterHoursMinutes)}
                     </p>
                   </div>
                 )}
@@ -281,7 +267,7 @@ export default function EmployeeAttendancePage() {
                         Overtime
                       </p>
                       <p className="font-semibold text-green-700 dark:text-green-400">
-                        +{selectedAttendance.overtimeMinutes}min
+                        {formatMinutes(selectedAttendance.overtimeMinutes)}
                       </p>
                     </div>
                   )}

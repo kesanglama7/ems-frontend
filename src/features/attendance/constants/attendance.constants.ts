@@ -8,10 +8,10 @@ export const ATTENDANCE_STATUS_LABELS: Record<AttendanceStatus, string> = {
 
 export const ATTENDANCE_STATUS_COLORS: Record<
   AttendanceStatus,
-  "default" | "secondary" | "destructive" | "outline"
+  "active" | "secondary" | "destructive" | "outline"
 > = {
   OPEN: "secondary",
-  COMPLETED: "default",
+  COMPLETED: "active",
   MISSING_CHECKOUT: "destructive",
 };
 
